@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>The Best Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            font-family: Arial, sans-serif;
+            background-color: #55988c; 
+            color: #100e0e; 
+        }
+
+        h1 {
+            color: #033e13; 
+            text-align: center;
+            margin-top: 40px; 
+            font-size: 32px; 
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Text shadow effect */
+        }
+
+        #game-container {
+            margin-top: 30px; /* Space between the game container and the title */
+            border: 2px solid #fff; /* White border around the container */
+            box-shadow: 0 0 20px #ffffff, 0 0 40px #ffcc00; /* Glowing effect */
+            padding: 5px; /* Small inner padding */
+            border-radius: 10px; /* Rounded corners for the container */
+            background: linear-gradient(135deg, #033e13, #55988c); /* Subtle gradient background */
+        }
+    </style>
+</head>
+<body>
+    <script src="phaser.min.js"></script>
+    <script src="level1.js"></script>
+    <script src="level2.js"></script>
+    <script src="game.js"></script>
+
+    <h1>Coin Catcher Game</h1>
+    <div id="game-container"></div>
+</body>
+</html>

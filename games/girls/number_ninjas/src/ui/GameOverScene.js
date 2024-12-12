@@ -1,0 +1,36 @@
+
+export default class GameOverScene extends Phaser.Scene {
+  constructor() {
+    super("game-over-scene");
+  }
+  //ni belum
+  init(data) {
+    this.score = data.score;
+    this.replayButton = undefined;
+  }
+
+  preload() {
+    this.load.image("background", "image/bg_layer1.png");
+    this.load.image("gameover", "image/gameover.png");
+    this.load.image("replay-button", "image/replay.png");
+  }
+
+  create() {
+    this.add.image(200, 320, "background");
+    this.add.image(200, 200, "gameover");
+    //belakangan
+    this.add.text(80, 300, "SCORE:", { fontSize: "60px", fill: "#000" });
+    this.add.text(300, 300, this.score, { fontSize: "60px", fill: "#000" });
+    this.replayButton = this.add
+      .image(200, 530, "replay-button")
+      .setInteractive();
+
+    this.replayButton.once(
+      "pointerup",
+      () => {
+        this.scene.start("math-fighter-scene");
+      },
+      this
+    );
+  }
+}
