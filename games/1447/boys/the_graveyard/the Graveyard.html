@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title> The Graveyard</title>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; background-color: #000; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+</head>
+<body>
+
+<script>
+    const config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 900 },
+                debug : false,
+            }
+        },
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        }
+    };
+
+    const game = new Phaser.Game(config);
+
+    let currentSpeed;
+    let spawnDelay;
+    let player;
+    let cursors;
+    let obstacles;
+    let gameOver = false;
+    let score = 0;
+    let scoreText;
+    let bgMusic;
+
+    function preload() {
+        this.load.image('bg', 'assets/grave.png');
+        this.load.image('fireball', 'assets/fireball.png');
+        this.load.image('groundImage', 'assets/platform.png');
+        this.load.audio('bgMusic', 'assets/background music.mp3');
+        this.load.spritesheet('player', 'assets/skeleton.png', { frameWidth: 64, frameHeight: 64 });
+    }
+
+    function create() {
+        
+        gameOver = false;
+        score = 0;
+        currentSpeed = 200;
+        spawnDelay = 1000;
+
+        if (!this.sound.get('bgMusic')) {
+            bgMusic = this.sound.add('bgMusic');
+            bgMusic.play({
+                loop: true,   
+                volume: 0.5  
+            });
+        } else if (!bgMusic.isPlaying) {
+            bgMusic.play();
+        }
+
+        this.add.image(400, 300, 'bg').setDisplaySize(800, 600).setDepth(-1);
+
+        const ground = this.physics.add.staticImage(400, 570, 'groundImage');
+        ground.setDisplaySize(800, 60); 
+        ground.refreshBody();
+        ground.body.setSize(1000,259);
+        ground.body.setOffset(0, 15);
+
+        player = this.physics.add.sprite(400, 500, 'player');
+        player.setBounce(0.1);
+        player.setCollideWorldBounds(true);
+
+-
+        player.body.setSize(24, 32);
+        player.body.setOffset(5, 7); 
+
+       
+        this.anims.create({
+            key: 'right', 
+            frames: this.anims.generateFrameNumbers('player', { start: 0, end: 2 }),
+            frameRate: 15,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'left',
+            frames: this.anims.generateFrameNumbers('player', { start: 8, end: 10 }),
+            frameRate: 15,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'idle',
+            frames: [ { key: 'player', frame: 0 } ],
+            frameRate: 20
+        });
+
+        this.physics.add.collider(player, ground);
+        cursors = this.input.keyboard.createCursorKeys();
+
+        obstacles = this.physics.add.group();
+        this.physics.add.collider(obstacles, ground, destroyObstacle, null, this);
+        this.physics.add.overlap(player, obstacles, hitObstacle, null, this);
+
+        this.time.delayedCall(spawnDelay, spawnObstacle, [], this);
+        
+        scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#FFF' });
+    }
+
+    function update() {
+        if (gameOver) return;
+
+        if (cursors.left.isDown) {
+            player.setVelocityX(-260);
+            player.anims.play('left', true);
+        } else if (cursors.right.isDown) {
+            player.setVelocityX(260);
+            player.anims.play('right', true); 
+        } else {
+            player.setVelocityX(0);
+            player.anims.play('idle');
+        }
+    }
+
+    function spawnObstacle() {
+        if (gameOver) return;
+        let x = Phaser.Math.Between(10, 790);
+        let obstacle = this.physics.add.sprite(x, 0, 'fireball');
+        
+        obstacle.setDisplaySize(60, 60);
+        obstacle.body.setCircle(100, 120, 250); 
+
+        obstacles.add(obstacle);
+        obstacle.body.setVelocityY(currentSpeed);
+        obstacle.body.setAllowGravity(false);
+        score += 10;
+        scoreText.setText('Score: ' + score);
+        if (currentSpeed < 800) currentSpeed += 10;
+        if (spawnDelay > 200) spawnDelay -= 20; 
+        this.time.delayedCall(spawnDelay, spawnObstacle, [], this);
+    }
+
+    function destroyObstacle(ground, obstacle) {
+        obstacle.destroy();
+    }
+
+    function hitObstacle(player, obstacle) {
+        this.physics.pause();
+        player.setTint(0xff0000);
+        player.anims.stop();
+        gameOver = true;
+        const btnText = this.add.text(400, 300, ' press space to RESTART', { 
+            fontSize: '40px', fill: 'purple', fontWeight: 'bold', backgroundColor: '#000' 
+        }).setOrigin(0.5).setPadding(10);
+        this.input.keyboard.once('keydown-SPACE', () => {
+            this.scene.restart();
+        });
+    }
+</script>
+
+</body>
+</html>

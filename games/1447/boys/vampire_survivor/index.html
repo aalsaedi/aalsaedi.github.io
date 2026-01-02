@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Vampire Survivor</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.2/dist/phaser.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        background-color: #000;
+        display: flex;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      // ----------------------------------------------------------------
+      // Scene 1: Main Menu
+      // ----------------------------------------------------------------
+      class MainMenu extends Phaser.Scene {
+        constructor() {
+          super("MainMenu");
+        }
+
+        preload() {
+          // Load background and UI assets
+          this.load.image("bg", "assets/background.png");
+          this.load.image("gem", "assets/gem.png");
+          this.load.image("slash", "assets/slash.png");
+          this.load.image("bullet", "assets/bullet.png");
+
+          // Load Sprite Sheets (Characters)
+          this.load.spritesheet("enemy", "assets/enemy.png", {
+            frameWidth: 128,
+            frameHeight: 128,
+          });
+          // Note: Capitalized names based on file structure
+          this.load.spritesheet("player_idle", "assets/Idle.png", {
+            frameWidth: 128,
+            frameHeight: 128,
+          });
+          this.load.spritesheet("player_walk", "assets/Walk.png", {
+            frameWidth: 128,
+            frameHeight: 128,
+          });
+          this.load.spritesheet("boss", "assets/boss.png", {
+            frameWidth: 128,
+            frameHeight: 128,
+          });
+
+          // Load Audio
+          this.load.audio("bg_music", "assets/music.mp3");
+        }
+
+        create() {
+          // Background setup
+          this.add.tileSprite(0, 0, 800, 600, "bg").setOrigin(0).setAlpha(0.5);
+
+          // Title Text
+          this.add
+            .text(400, 200, "VAMPIRE SURVIVOR", {
+              fontSize: "64px",
+              fill: "#ff0000",
+              stroke: "#fff",
+              strokeThickness: 6,
+              fontStyle: "bold",
+            })
+            .setOrigin(0.5);
+          this.add
+            .text(400, 280, "Survive 1 Minute & Kill the Boss", {
+              fontSize: "24px",
+              fill: "#fff",
+            })
+            .setOrigin(0.5);
+
+          // Start Button
+          var startBtn = this.add
+            .text(400, 400, "START GAME", {
+              fontSize: "40px",
+              fill: "#0f0",
+              backgroundColor: "#000",
+              padding: { x: 20, y: 10 },
+            })
+            .setOrigin(0.5)
+            .setInteractive({ useHandCursor: true });
+
+          // Hover effects
+          startBtn.on("pointerover", () =>
+            startBtn.setStyle({ fill: "#ffff00" })
+          );
+          startBtn.on("pointerout", () => startBtn.setStyle({ fill: "#0f0" }));
+
+          // Start Game Scene
+          startBtn.on("pointerdown", () => {
+            this.scene.start("GameScene");
+          });
+        }
+      }
+
+      // ----------------------------------------------------------------
+      // Scene 2: Gameplay Scene
+      // ----------------------------------------------------------------
+      class GameScene extends Phaser.Scene {
+        constructor() {
+          super("GameScene");
+        }
+
+        create() {
+          // Initialize game variables
+          this.score = 0;
+          this.level = 1;
+          this.currentXP = 0;
+          this.nextLevelXP = 50;
+          this.fireRate = 850;
+          this.playerHealth = 100;
+          this.maxHealth = 100;
+          this.isInvincible = false;
+          this.isBossSpawned = false;
+          this.gameTimer = 0;
+          this.lastFired = 0;
+          this.lastSwordFired = 0;
+          this.isGameOver = false;
+
+          // Play background music
+          if (
+            this.cache.audio.exists("bg_music") &&
+            !this.sound.get("bg_music")
+          ) {
+            this.sound.play("bg_music", { loop: true, volume: 0.1 });
+          }
+
+          // --- Procedural Graphics (Fallback textures) ---
+          this.createGraphicsTextures();
+
+          // --- World Setup ---
+          this.background = this.add
+            .tileSprite(0, 0, 800, 600, "bg")
+            .setOrigin(0)
+            .setScrollFactor(0);
+          this.physics.world.setBounds(0, 0, 2000, 2000);
+
+          // --- Player Setup ---
+          this.player = this.physics.add.sprite(1000, 1000, "player_idle");
+          this.player.setCollideWorldBounds(true);
+          this.player.setScale(0.75);
+          this.player.body.setSize(50, 80);
+          this.player.body.setOffset(40, 40);
+
+          // --- Weapons Setup (Garlic) ---
+          this.garlicAura = this.physics.add.image(
+            1000,
+            1000,
+            "garlic_texture"
+          );
+          this.garlicAura.setAlpha(0);
+          this.garlicAura.body.setCircle(60);
+          this.garlicAura.body.setOffset(4, 4);
+          this.garlicAura.isActive = false;
+
+          // Camera Follow
+          this.cameras.main.setBounds(0, 0, 2000, 2000);
+          this.cameras.main.startFollow(this.player);
+
+          // --- Animations ---
+          this.createAnimations();
+          this.player.play("idle_anim");
+
+          // --- Physics Groups ---
+          this.enemies = this.physics.add.group();
+          this.bullets = this.physics.add.group();
+          this.swords = this.physics.add.group();
+          this.gems = this.physics.add.group();
+
+          // --- Collision & Overlaps ---
+          this.physics.add.overlap(
+            this.bullets,
+            this.enemies,
+            this.hitEnemy,
+            null,
+            this
+          );
+          this.physics.add.overlap(
+            this.swords,
+            this.enemies,
+            this.hitEnemyWithSword,
+            null,
+            this
+          );
+          this.physics.add.overlap(
+            this.garlicAura,
+            this.enemies,
+            this.hitEnemyWithGarlic,
+            null,
+            this
+          );
+          this.physics.add.overlap(
+            this.player,
+            this.enemies,
+            this.hitPlayer,
+            null,
+            this
+          );
+          this.physics.add.overlap(
+            this.player,
+            this.gems,
+            this.collectGem,
+            null,
+            this
+          );
+
+          // --- Timers (Spawning & Logic) ---
+          this.time.addEvent({
+            delay: 600,
+            callback: this.spawnEnemy,
+            callbackScope: this,
+            loop: true,
+          });
+          this.time.addEvent({
+            delay: 1000,
+            callback: this.updateTimer,
+            callbackScope: this,
+            loop: true,
+          });
+          this.time.addEvent({
+            delay: 1000,
+            callback: this.regenHealth,
+            callbackScope: this,
+            loop: true,
+          });
+
+          // --- UI (User Interface) ---
+          this.timerText = this.add
+            .text(400, 30, "0:00", {
+              fontSize: "48px",
+              fill: "#FFD700",
+              stroke: "#000",
+              strokeThickness: 5,
+            })
+            .setOrigin(0.5)
+            .setScrollFactor(0)
+            .setDepth(100);
+          this.levelText = this.add
+            .text(16, 16, "Level: 1 (0/50)", {
+              fontSize: "24px",
+              fill: "#00ffff",
+              stroke: "#000",
+              strokeThickness: 3,
+            })
+            .setScrollFactor(0)
+            .setDepth(100);
+
+          this.healthGraphics = this.add.graphics();
+          this.healthGraphics.setDepth(99);
+          this.cursors = this.input.keyboard.createCursorKeys();
+        }
+
+        update(time, delta) {
+          if (this.isGameOver) return;
+
+          // Player Movement Logic
+          this.player.setVelocity(0);
+          let isMoving = false;
+
+          if (this.cursors.left.isDown) {
+            this.player.setVelocityX(-250);
+            this.player.flipX = true;
+            isMoving = true;
+          } else if (this.cursors.right.isDown) {
+            this.player.setVelocityX(250);
+            this.player.flipX = false;
+            isMoving = true;
+          }
+          if (this.cursors.up.isDown) {
+            this.player.setVelocityY(-250);
+            isMoving = true;
+          } else if (this.cursors.down.isDown) {
+            this.player.setVelocityY(250);
+            isMoving = true;
+          }
+
+          if (isMoving) this.player.anims.play("walk_anim", true);
+          else this.player.anims.play("idle_anim", true);
+
+          this.drawHealthBar();
+
+          // Update Garlic Position
+          if (this.garlicAura.isActive) {
+            this.garlicAura.x = this.player.body.center.x;
+            this.garlicAura.y = this.player.body.center.y;
+            this.garlicAura.rotation += 0.02;
+          }
+
+          // Parallax Background
+          this.background.tilePositionX = this.cameras.main.scrollX;
+          this.background.tilePositionY = this.cameras.main.scrollY;
+
+          // Enemy Chase Logic
+          this.enemies.getChildren().forEach((enemy) => {
+            let speed = enemy.isBoss ? 140 : 110;
+            this.physics.moveToObject(enemy, this.player, speed);
+            if (enemy.body.velocity.x < 0) enemy.flipX = true;
+            else enemy.flipX = false;
+          });
+
+          // Auto-Fire Weapons
+          if (time > this.lastFired) {
+            this.fireWeapon();
+            this.lastFired = time + this.fireRate;
+          }
+
+          if (this.level >= 2 && time > this.lastSwordFired) {
+            this.fireSword();
+            this.lastSwordFired = time + 1000;
+          }
+        }
+
+        // --- Methods & Logic ---
+
+        createGraphicsTextures() {
+          var graphics = this.make.graphics({ x: 0, y: 0, add: false });
+          // Water Bullet
+          graphics.fillStyle(0x00ffff, 1);
+          graphics.fillCircle(10, 10, 8);
+          graphics.generateTexture("water_bullet", 20, 20);
+          // Sword Slash
+          graphics.clear();
+          graphics.fillStyle(0xffffff, 0.8);
+          graphics.fillRect(0, 0, 100, 30);
+          graphics.generateTexture("sword_slash_backup", 100, 30);
+          // Gem
+          graphics.clear();
+          graphics.fillStyle(0x0000ff, 1);
+          graphics.fillRect(0, 0, 16, 16);
+          graphics.generateTexture("gem_texture", 16, 16);
+          // Garlic (White Transparent Ring)
+          graphics.clear();
+          graphics.lineStyle(3, 0xffffff, 0.4);
+          graphics.strokeCircle(64, 64, 60);
+          graphics.generateTexture("garlic_texture", 128, 128);
+        }
+
+        createAnimations() {
+          if (!this.anims.exists("idle_anim")) {
+            this.anims.create({
+              key: "idle_anim",
+              frames: this.anims.generateFrameNumbers("player_idle", {
+                start: 0,
+                end: 7,
+              }),
+              frameRate: 10,
+              repeat: -1,
+            });
+            this.anims.create({
+              key: "walk_anim",
+              frames: this.anims.generateFrameNumbers("player_walk", {
+                start: 0,
+                end: 7,
+              }),
+              frameRate: 15,
+              repeat: -1,
+            });
+            this.anims.create({
+              key: "enemy_walk",
+              frames: this.anims.generateFrameNumbers("enemy", {
+                start: 0,
+                end: 10,
+              }),
+              frameRate: 12,
+              repeat: -1,
+            });
+            this.anims.create({
+              key: "boss_anim",
+              frames: this.anims.generateFrameNumbers("boss", {
+                start: 0,
+                end: 10,
+              }),
+              frameRate: 10,
+              repeat: -1,
+            });
+          }
+        }
+
+        drawHealthBar() {
+          this.healthGraphics.clear();
+          var x = this.player.x - 30;
+          var y = this.player.y + 50;
+          this.healthGraphics.fillStyle(0x000000);
+          this.healthGraphics.fillRect(x, y, 60, 8);
+          this.healthGraphics.fillStyle(0xff0000);
+          var width = (this.playerHealth / this.maxHealth) * 60;
+          this.healthGraphics.fillRect(x, y, width, 8);
+        }
+
+        regenHealth() {
+          if (this.isGameOver) return;
+          if (this.playerHealth < this.maxHealth) {
+            this.playerHealth += 2;
+            if (this.playerHealth > this.maxHealth)
+              this.playerHealth = this.maxHealth;
+          }
+        }
+
+        spawnEnemy() {
+          if (this.isGameOver) return;
+          if (this.isBossSpawned && Phaser.Math.Between(0, 10) > 2) return;
+
+          const cam = this.cameras.main;
+          const pad = 60;
+          let x, y;
+          const side = Phaser.Math.Between(0, 3); // Random spawn side
+          if (side === 0) {
+            x = Phaser.Math.Between(cam.scrollX, cam.scrollX + cam.width);
+            y = cam.scrollY - pad;
+          } else if (side === 1) {
+            x = Phaser.Math.Between(cam.scrollX, cam.scrollX + cam.width);
+            y = cam.scrollY + cam.height + pad;
+          } else if (side === 2) {
+            x = cam.scrollX - pad;
+            y = Phaser.Math.Between(cam.scrollY, cam.scrollY + cam.height);
+          } else {
+            x = cam.scrollX + cam.width + pad;
+            y = Phaser.Math.Between(cam.scrollY, cam.scrollY + cam.height);
+          }
+
+          var enemy = this.enemies.create(x, y, "enemy");
+          enemy.setScale(0.6);
+          enemy.body.setSize(50, 80);
+          enemy.play("enemy_walk");
+          enemy.hp = 2;
+        }
+
+        fireWeapon() {
+          let closestEnemy = null;
+          let closestDist = 10000;
+          this.enemies.getChildren().forEach((enemy) => {
+            let dist = Phaser.Math.Distance.Between(
+              this.player.x,
+              this.player.y,
+              enemy.x,
+              enemy.y
+            );
+            if (dist < closestDist) {
+              closestDist = dist;
+              closestEnemy = enemy;
+            }
+          });
+
+          if (closestEnemy && closestDist < 500) {
+            var bulletKey = this.textures.exists("bullet")
+              ? "bullet"
+              : "water_bullet";
+            var bullet = this.bullets.create(
+              this.player.x,
+              this.player.y,
+              bulletKey
+            );
+            if (bulletKey === "bullet") bullet.setScale(1.5);
+            this.physics.moveToObject(bullet, closestEnemy, 700);
+            var angle = Phaser.Math.Angle.Between(
+              this.player.x,
+              this.player.y,
+              closestEnemy.x,
+              closestEnemy.y
+            );
+            bullet.setRotation(angle);
+            this.time.delayedCall(2000, () => {
+              if (bullet.active) bullet.destroy();
+            });
+          }
+        }
+
+        fireSword() {
+          var swordKey = this.textures.exists("slash")
+            ? "slash"
+            : "sword_slash_backup";
+          let visualScale = 0.2;
+          let bodyWidth = 700;
+          let bodyHeight = 300;
+          let dist = 80;
+
+          var slash1 = this.swords.create(
+            this.player.x + dist,
+            this.player.body.center.y,
+            swordKey
+          );
+          slash1.setAngle(0);
+          if (swordKey === "slash") {
+            slash1.setScale(visualScale);
+            slash1.body.setSize(bodyWidth, bodyHeight);
+            slash1.body.setOffset(
+              (slash1.width - bodyWidth) / 2,
+              (slash1.height - bodyHeight) / 2
+            );
+          }
+
+          var slash2 = this.swords.create(
+            this.player.x - dist,
+            this.player.body.center.y,
+            swordKey
+          );
+          slash2.setAngle(180);
+          if (swordKey === "slash") {
+            slash2.setScale(visualScale);
+            slash2.body.setSize(bodyWidth, bodyHeight);
+            slash2.body.setOffset(
+              (slash2.width - bodyWidth) / 2,
+              (slash2.height - bodyHeight) / 2
+            );
+          }
+
+          this.time.delayedCall(150, () => {
+            if (slash1.active) slash1.destroy();
+            if (slash2.active) slash2.destroy();
+          });
+        }
+
+        hitEnemy(bullet, enemy) {
+          bullet.destroy();
+          this.damageEnemy(enemy, 1);
+        }
+        hitEnemyWithSword(sword, enemy) {
+          this.damageEnemy(enemy, 5);
+        }
+        hitEnemyWithGarlic(aura, enemy) {
+          if (this.garlicAura.isActive) this.damageEnemy(enemy, 0.1);
+        }
+
+        damageEnemy(enemy, damage) {
+          if (!enemy.active) return;
+          enemy.hp -= damage;
+
+          enemy.setTint(0xff0000); // Damage flash (Red)
+          this.time.delayedCall(100, () => {
+            if (enemy.active) {
+              enemy.clearTint();
+            }
+          });
+          if (enemy.hp <= 0) {
+            this.killEnemy(enemy);
+          }
+        }
+
+        killEnemy(enemy) {
+          if (enemy.isBoss) {
+            this.winGame();
+          } else {
+            var gemKey = this.textures.exists("gem") ? "gem" : "gem_texture";
+            var gem = this.gems.create(enemy.x, enemy.y, gemKey);
+            if (gemKey === "gem") {
+              gem.setScale(0.05);
+            }
+            enemy.destroy();
+          }
+        }
+
+        collectGem(player, gem) {
+          gem.destroy();
+          this.score += 10;
+          this.currentXP += 10;
+          this.levelText.setText(
+            "Level: " +
+              this.level +
+              " (" +
+              this.currentXP +
+              "/" +
+              this.nextLevelXP +
+              ")"
+          );
+          if (this.currentXP >= this.nextLevelXP) {
+            this.levelUp();
+          }
+        }
+
+        levelUp() {
+          this.level++;
+          this.currentXP = 0;
+          this.nextLevelXP += 50;
+          this.levelText.setText(
+            "Level: " +
+              this.level +
+              " (" +
+              this.currentXP +
+              "/" +
+              this.nextLevelXP +
+              ")"
+          );
+          this.levelText.setStyle({ fill: "#ffff00" });
+
+          if (this.level === 2) {
+            this.showMsg("WHIP UNLOCKED!");
+          } else if (this.level === 3) {
+            this.showMsg("GARLIC UNLOCKED!");
+            this.garlicAura.setAlpha(1);
+            this.garlicAura.isActive = true;
+          }
+
+          this.time.delayedCall(1000, () => {
+            this.levelText.setStyle({ fill: "#00ffff" });
+          });
+          if (this.fireRate > 200) {
+            this.fireRate -= 50;
+          }
+        }
+
+        showMsg(text) {
+          var txt = this.add
+            .text(400, 300, text, {
+              fontSize: "40px",
+              fill: "#ff4500",
+              stroke: "#fff",
+              strokeThickness: 4,
+            })
+            .setOrigin(0.5)
+            .setScrollFactor(0)
+            .setDepth(101);
+          this.time.delayedCall(2000, () => txt.destroy());
+        }
+
+        updateTimer() {
+          if (this.isGameOver) return;
+          this.gameTimer++;
+          var minutes = Math.floor(this.gameTimer / 60);
+          var seconds = this.gameTimer % 60;
+          this.timerText.setText(
+            minutes + ":" + (seconds < 10 ? "0" : "") + seconds
+          );
+
+          if (this.gameTimer >= 60 && !this.isBossSpawned) {
+            this.spawnBoss();
+          }
+        }
+
+        spawnBoss() {
+          this.isBossSpawned = true;
+          var warningText = this.add
+            .text(400, 300, "BOSS SPAWNED!", {
+              fontSize: "64px",
+              fill: "#FF0000",
+              stroke: "#FFF",
+              strokeThickness: 6,
+            })
+            .setOrigin(0.5)
+            .setScrollFactor(0)
+            .setDepth(101);
+          this.time.delayedCall(3000, () => warningText.destroy());
+
+          var boss = this.enemies.create(
+            this.player.x + 400,
+            this.player.y,
+            "boss"
+          );
+          boss.setScale(1.5);
+          boss.body.setSize(80, 100);
+          boss.play("boss_anim");
+          boss.hp = 800;
+          boss.isBoss = true;
+        }
+
+        hitPlayer(player, enemy) {
+          if (this.isInvincible || this.isGameOver) return;
+          this.playerHealth -= 15;
+          if (this.playerHealth <= 0) {
+            this.healthGraphics.clear();
+            this.physics.pause();
+            this.isGameOver = true;
+            this.player.setTint(0xff0000);
+
+            // Show Game Over Overlay
+            this.add
+              .rectangle(400, 300, 800, 600, 0x000000)
+              .setAlpha(0.7)
+              .setScrollFactor(0)
+              .setDepth(150);
+            this.add
+              .text(400, 250, "GAME OVER", {
+                fontSize: "64px",
+                fill: "#ff0000",
+                stroke: "#fff",
+                strokeThickness: 6,
+              })
+              .setOrigin(0.5)
+              .setScrollFactor(0)
+              .setDepth(200);
+
+            var restartBtn = this.add
+              .text(400, 350, "RESTART GAME", {
+                fontSize: "32px",
+                fill: "#ffffff",
+                backgroundColor: "#000000",
+                padding: { x: 20, y: 10 },
+              })
+              .setOrigin(0.5)
+              .setScrollFactor(0)
+              .setDepth(200)
+              .setInteractive({ useHandCursor: true });
+
+            restartBtn.on("pointerdown", () => {
+              this.scene.restart();
+            });
+          } else {
+            this.isInvincible = true;
+            this.player.setAlpha(0.5);
+            this.time.delayedCall(1000, () => {
+              this.isInvincible = false;
+              this.player.setAlpha(1);
+            });
+          }
+        }
+
+        winGame() {
+          this.physics.pause();
+          this.isGameOver = true;
+
+          // Show Victory Overlay
+          this.add
+            .rectangle(400, 300, 800, 600, 0x000000)
+            .setAlpha(0.6)
+            .setScrollFactor(0)
+            .setDepth(150);
+          this.add
+            .text(400, 250, "VICTORY!", {
+              fontSize: "80px",
+              fill: "#00ff00",
+              stroke: "#fff",
+              strokeThickness: 6,
+            })
+            .setOrigin(0.5)
+            .setScrollFactor(0)
+            .setDepth(200);
+
+          var restartBtn = this.add
+            .text(400, 400, "PLAY AGAIN", {
+              fontSize: "32px",
+              fill: "#000",
+              backgroundColor: "#fff",
+              padding: { x: 20, y: 10 },
+            })
+            .setOrigin(0.5)
+            .setScrollFactor(0)
+            .setDepth(200)
+            .setInteractive({ useHandCursor: true });
+
+          restartBtn.on("pointerdown", () => {
+            this.scene.restart();
+          });
+        }
+      }
+
+      // Phaser Config
+      var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        physics: { default: "arcade", arcade: { debug: false } },
+        scene: [MainMenu, GameScene],
+      };
+
+      var game = new Phaser.Game(config);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+==============
+Space Defender
+==============
+How to Run the Game
+==============
+
+Recommended Methods:
+
+Method #1 : VScode
+Open the project folder.
+Start a local web server (VS Code Live Server). 
+Open index.html in your browser.
+
+Method #2 : Phaser Editor:
+Import the Project via the project tab
+Run the Play button Up top the phaser window
+Note: After extracting the .zip file make sure that the path is ../SpaceDefender.
+
+WARNING:
+Opening index.html directly may not work duo to asset loading issues!!!!!
+
+==========================================================================
+How to Play:
+Use Left / Right Arrow Keys to move the player horizontally.
+Use Up / Down Arrow Keys to move the player vertically.
+Destroy enemies to gain points.
+==========================================================================
+Game Over Conditions:
+The game ends if the player collides with an enemy.
+The game also ends if any enemy reaches the bottom of the screen.
+==========================================================================
+Scoring System:
+Each enemy destroyed gives 10 points.
+The score is displayed on the screen during gameplay.
+==========================================================================
+Difficulty:
+Enemies continuously spawn from the top of the screen.
+Enemy movement speed increases over time making the game harder.
+==========================================================================
+Our best score is: 
+Sultan 520.
+Faris 440.
+Try beating us!
+==========================================================================

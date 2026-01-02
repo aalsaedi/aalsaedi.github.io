@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Space Defender</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
+  <style>
+    body { margin: 0; padding: 0; background: #000; }
+    canvas { display: block; margin: auto; }
+  </style>
+</head>
+<body>
+<script>
+
+// MENU SCENE 
+class MenuScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'MenuScene' });
+  }
+  preload() {
+  this.load.audio('menu', 'assets/sounds/menu.mp3');
+}
+  create() {
+    this.menuMusic = this.sound.add('menu', { 
+    volume: 0.05, 
+    loop: true 
+    });
+
+    this.menuMusic.play();
+
+    this.add.text(400, 200, 'SPACE DEFENDER', {
+      fontSize: '40px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+
+    this.add.text(400, 300, 'Press SPACE to Start', {
+      fontSize: '20px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+
+
+this.add.text(400, 500, 'Sultan aloufi', {
+      fontSize: '20px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+    this.add.text(400, 530, 'Faris almalki', {
+      fontSize: '20px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+  
+
+    this.input.keyboard.once('keydown-SPACE', () => {
+      this.menuMusic.stop();
+      this.scene.start('GameScene');
+    });
+  }
+}
+
+
+// GAME SCENE
+class GameScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'GameScene' });
+  }
+
+  preload() {
+    this.load.image('background', 'assets/background.png');
+    this.load.image('player', 'assets/player.png');
+    this.load.image('bullet', 'assets/bullet.png');
+    this.load.image('enemy', 'assets/enemy.png');
+    this.load.image('enemy2', 'assets/enemy2.png');
+    this.load.spritesheet('explosion', 'assets/explosion.png', {
+      frameWidth: 64,
+      frameHeight: 64
+    });
+    this.load.spritesheet('explosion2', 'assets/explosion2.png', { 
+      frameWidth: 64, 
+      frameHeight: 64 
+    });
+    this.load.audio('bgm', 'assets/sounds/bgm.mp3');
+    this.load.audio('shootSound', 'assets/sounds/shoot.wav'); 
+    this.load.audio('explosionSound', 'assets/sounds/explosion.wav');
+    this.load.audio('loseSound', 'assets/sounds/lose.wav');
+  }
+
+  create() {
+    this.score = 0;
+    this.isGameOver = false;
+    this.bg = this.add.tileSprite(400, 300, 800, 600, 'background');
+
+    this.player = this.physics.add.sprite(400, 520, 'player');
+    this.player.setCollideWorldBounds(true);
+    this.player.setSize(this.player.width * 0.6, this.player.height * 0.6);
+    this.player.setOffset(this.player.width * 0.2, this.player.height * 0.2);  
+    this.bullets = this.physics.add.group();
+    this.enemies = this.physics.add.group();
+
+    this.scoreText = this.add.text(16, 16, 'Score: 0', {
+      fontSize: '20px',
+      fill: '#ffffff'
+    });
+
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.input.keyboard.on('keydown-SPACE', this.shoot, this);
+
+    this.time.addEvent({
+      delay: 1000,
+      callback: this.spawnEnemy,
+      callbackScope: this,
+      loop: true
+    });
+
+    this.anims.create({
+      key: 'explode',
+      frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 15 }),
+      frameRate: 20,
+      hideOnComplete: true
+    });
+
+    this.anims.create({
+       key: 'explode2',
+      frames: this.anims.generateFrameNumbers('explosion2', { start: 0, end: 15 }),
+      frameRate: 20,
+      hideOnComplete: true
+    });
+
+    this.physics.add.overlap(this.bullets, this.enemies, this.hitEnemy, null, this);
+    this.physics.add.overlap(this.player, this.enemies, this.gameOver, null, this);
+
+    this.music = this.sound.add('bgm', {
+    volume: 0.05,  
+    loop: true 
+    });
+    this.enemySpeed = 150;  
+    this.music.play();
+  }
+
+  update() {
+    if (this.cursors.left.isDown) {
+    this.player.setVelocityX(-360);
+  } else if (this.cursors.right.isDown) {
+    this.player.setVelocityX(360);
+  } else {
+    this.player.setVelocityX(0);
+  }
+  if (this.cursors.up.isDown) {
+    this.player.setVelocityY(-360);
+  } else if (this.cursors.down.isDown) {
+    this.player.setVelocityY(360);
+  } else {
+    this.player.setVelocityY(0);
+  }
+    this.bullets.children.each(bullet => {
+  if (bullet.active && bullet.y < 0) {
+    bullet.destroy();
+  }
+});
+this.enemies.children.each(enemy => {
+  if (enemy.active && enemy.y > 600) { 
+    this.gameOver(); 
+  }
+});
+
+this.bg.tilePositionY -= 1;
+  }
+
+  shoot() {
+    const bullet = this.bullets.create(this.player.x, this.player.y - 20, 'bullet');
+    bullet.setVelocityY(-400);
+    bullet.setAngle(-90); 
+    bullet.setScale(0.4);
+    this.sound.play('shootSound', { volume: 0.3 });
+  }
+
+  spawnEnemy() {
+    const x = Phaser.Math.Between(50, 750);
+    const type = Phaser.Math.Between(1, 2); 
+    const key = type === 1 ? 'enemy' : 'enemy2';
+    const enemy = this.enemies.create(x, 0, key);
+    enemy.setVelocityY(this.enemySpeed);
+    enemy.setAngle(180);
+    enemy.setScale(1.6);
+    enemy.setSize(enemy.width * 0.4, enemy.height * 0.4);
+    enemy.setOffset(
+      enemy.width * 0.45 * (enemy.scaleX - 1),
+      enemy.height * 0.45 * (enemy.scaleY - 1)
+    );
+    this.enemySpeed += 4;
+    enemy.type = type;
+  }
+
+
+
+  hitEnemy(bullet, enemy) {
+    if (!bullet.active || !enemy.active) return;
+
+    const x = enemy.x;
+    const y = enemy.y;
+
+    bullet.destroy();
+    enemy.destroy();
+
+    const explosionKey = enemy.type === 1 ? 'explode' : 'explode2';
+    const explosion = this.add.sprite(x, y, enemy.type === 1 ? 'explosion' : 'explosion2');
+    explosion.play(explosionKey);
+    explosion.setAngle(180);
+    explosion.setScale(1.6);
+    this.sound.play('explosionSound', { volume: 0.2 });
+    this.score += 10;
+    this.scoreText.setText('Score: ' + this.score);
+  }
+  gameOver(player, enemy) {
+  if (this.isGameOver) return;
+  this.isGameOver = true;
+
+  this.physics.pause();
+  this.music.stop();
+  this.sound.play('loseSound', { volume: 0.1 });  
+  this.player.setTint(0xff0000); 
+
+  this.time.delayedCall(300, () => {
+    this.scene.start('GameOverScene', { score: this.score });
+  })
+}
+
+}
+
+// GAME OVER SCENE 
+class GameOverScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'GameOverScene' });
+  }
+
+  init(data) {
+    this.finalScore = data.score;
+  }
+
+  create() {
+    this.add.text(400, 200, 'GAME OVER', {
+      fontSize: '40px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+
+    this.add.text(400, 260, 'Score: ' + this.finalScore, {
+      fontSize: '24px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+
+    this.add.text(400, 330, 'Press SPACE to Restart', {
+      fontSize: '18px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+
+    this.input.keyboard.once('keydown-SPACE', () => {
+      this.scene.start('MenuScene');
+    });
+  }
+}
+
+// GAME CONFIG 
+const config = {
+  type: Phaser.AUTO,
+  width: 800,
+  height: 600,
+  physics: {
+    default: 'arcade',
+    arcade: {
+      debug: false
+    }
+  },
+  scene: [MenuScene, GameScene, GameOverScene]
+};
+new Phaser.Game(config);
+
+</script>
+</body>
+</html>
