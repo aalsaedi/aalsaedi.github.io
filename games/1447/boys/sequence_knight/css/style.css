@@ -1,0 +1,9 @@
+/* توسيط اللعبة في منتصف الموقع */
+.game-container{
+    background-color: rgb(43, 43, 43);
+    max-height: calc(100% - 60px);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%)
+}

@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Astro Blaster</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.js"></script>
+<style>
+    body { margin:0; background:black; overflow: hidden; font-family: 'Orbitron', sans-serif; }
+    canvas { display:block; }
+    #loading { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:cyan; font-family:sans-serif; }
+</style>
+</head>
+<body>
+
+<div id="loading">LOADING SYSTEM...</div>
+
+<script>
+
+// --- GLOBAL CONFIGURATION ---
+const FONT_MAIN = '"Orbitron", sans-serif';
+const COLOR_PRIMARY = 0x00ffff; // Cyan
+const COLOR_ACCENT = 0x00ff00;  // Green
+const COLOR_POWER = 0xffff00;   // Yellow (Powerup)
+const COLOR_DANGER = 0xff0033;  // Red
+const COLOR_DARK = 0x001111;    // Dark Bg
+
+const DIFFICULTIES = {
+    EASY:   { label: 'EASY', hpMult: 0.6, speedMult: 0.8 },
+    NORMAL: { label: 'NORMAL', hpMult: 1.0, speedMult: 1.0 },
+    HARD:   { label: 'HARD',   hpMult: 1.5, speedMult: 1.3 }
+};
+
+let currentDifficulty = DIFFICULTIES.NORMAL;
+
+// --- LEVEL DATA ---
+const LEVELS_DATA = [
+    // WAVE 1
+    {enemyCount:8, enemySpeed:100, enemyHp:30, enemyFireRate:1500, bg:0x000510, boss:false},
+    {enemyCount:12, enemySpeed:120, enemyHp:40, enemyFireRate:1400, bg:0x000510, boss:false},
+    {enemyCount:10, enemySpeed:140, enemyHp:50, enemyFireRate:1300, bg:0x000510, boss:false},
+    // BOSS 1: THE INTERCEPTOR
+    {boss:true, bossName:"THE INTERCEPTOR", bossHp:2000, bossSpeed:120, bossFireRate:1000, bossTint:0xff4444, bg:0x200505},
+    // WAVE 2
+    {enemyCount:18, enemySpeed:160, enemyHp:60, enemyFireRate:1100, bg:0x100010, boss:false},
+    {enemyCount:10, enemySpeed:180, enemyHp:70, enemyFireRate:1000, bg:0x100010, boss:false},
+    // BOSS 2: THE DESTROYER
+    {boss:true, bossName:"THE DESTROYER", bossHp:3000, bossSpeed:100, bossFireRate:1000, bossTint:0xff00ff, bg:0x150015},
+    // WAVE 3
+    {enemyCount:25, enemySpeed:200, enemyHp:40, enemyFireRate:900, bg:0x001020, boss:false}, 
+    // FINAL BOSS: THE MOTHERSHIP
+    {enemyCount:10, enemySpeed:140, enemyHp:50, enemyFireRate:1300, bg:0x000510, boss:false},
+    {boss:true, bossName:"MOTHERSHIP CORE", bossHp:4000, bossSpeed:80, bossFireRate:1000, bossTint:0xffd700, bg:0x222200}
+    
+];
+
+// ==========================================
+// UI BUTTON COMPONENT
+// ==========================================
+class ProButton {
+    constructor(scene, x, y, text, color, callback) {
+        this.scene = scene;
+        this.container = scene.add.container(x, y);
+        this.bg = scene.add.rectangle(0, 0, 300, 50, COLOR_DARK, 0.8).setStrokeStyle(2, color);
+        this.textObj = scene.add.text(0, 0, text, { fontFamily: FONT_MAIN, fontSize: '24px', color: '#ffffff' }).setOrigin(0.5);
+        this.container.add([this.bg, this.textObj]);
+        this.bg.setInteractive({ useHandCursor: true });
+
+        this.bg.on('pointerover', () => {
+            scene.tweens.add({ targets: this.bg, fillAlpha: 1, duration: 100 });
+            scene.tweens.add({ targets: this.textObj, scale: 1.1, duration: 100 });
+            this.bg.setStrokeStyle(4, color);
+            this.bg.setFillStyle(color, 0.2);
+        });
+        this.bg.on('pointerout', () => {
+            scene.tweens.add({ targets: this.bg, fillAlpha: 0.8, duration: 100 });
+            scene.tweens.add({ targets: this.textObj, scale: 1.0, duration: 100 });
+            this.bg.setStrokeStyle(2, color);
+            this.bg.setFillStyle(COLOR_DARK, 0.8);
+        });
+        this.bg.on('pointerdown', () => {
+            scene.tweens.add({
+                targets: this.container, scale: 0.95, yoyo: true, duration: 50,
+                onComplete: () => { if(callback) callback(); }
+            });
+        });
+    }
+}
+
+// ==========================================
+// SCENE 1: MAIN MENU
+// ==========================================
+class MainMenu extends Phaser.Scene {
+    constructor() { super('MainMenu'); }
+    preload(){
+        document.getElementById('loading').style.display = 'none';
+        this.load.image('player', 'player.png'); 
+        this.load.image('enemy', 'enemy.png');
+        this.load.image('boss', 'boss.png');
+        this.load.image('health', 'https://labs.phaser.io/assets/sprites/firstaid.png');
+        this.load.image('bullet','https://labs.phaser.io/assets/sprites/bullet.png');
+        this.load.image('bulletadd','bullet.png');
+        this.load.image('star','https://labs.phaser.io/assets/particles/white.png');
+        // Audio
+        this.load.audio('fire','https://labs.phaser.io/assets/audio/SoundEffects/pistol.wav');
+        this.load.audio('explosion','https://labs.phaser.io/assets/audio/SoundEffects/explosion.mp3');
+        this.load.audio('bossFire','https://labs.phaser.io/assets/audio/SoundEffects/explosion.mp3');
+        this.load.audio('pickup', 'https://labs.phaser.io/assets/audio/SoundEffects/key.wav');
+        this.load.audio('ultSound', 'https://labs.phaser.io/assets/audio/SoundEffects/explosion.mp3'); 
+        this.load.audio('powerupSound', 'https://labs.phaser.io/assets/audio/SoundEffects/p-ping.mp3'); 
+    }
+    create() {
+        this.cameras.main.fadeIn(500, 0, 0, 0);
+        this.createStars();
+        this.add.text(this.scale.width/2, this.scale.height/3 - 60, 'Astro Blaster', { fontFamily: FONT_MAIN, fontSize: '72px', color: '#00ffff', align: 'center' }).setOrigin(0.5).setStroke('#008888', 2);
+
+        let startY = this.scale.height/2 + 20;
+        new ProButton(this, this.scale.width/2, startY, 'INITIATE MISSION', COLOR_ACCENT, () => {
+            this.cameras.main.fadeOut(300);
+            this.time.delayedCall(300, () => this.scene.start('GameScene'));
+        });
+        new ProButton(this, this.scale.width/2, startY + 70, 'INSTRUCTIONS', 0xffff00, () => { this.scene.start('InstructionScene'); });
+        new ProButton(this, this.scale.width/2, startY + 140, 'SETTINGS', 0xffffff, () => { this.scene.start('SettingsScene'); });
+        this.add.text(this.scale.width/2, this.scale.height - 40, `DIFFICULTY: ${currentDifficulty.label}`, { fontFamily: FONT_MAIN, fontSize: '16px', color: '#666' }).setOrigin(0.5);
+    }
+    createStars() {
+        this.starsGroup = this.add.group();
+        for(let i=0; i<80; i++){
+            let star = this.add.image(Math.random()*this.scale.width, Math.random()*this.scale.height, 'star').setScale(Math.random()*0.3);
+            star.alpha = Math.random()*0.6 + 0.2;
+            star.speed = Math.random()*0.2 + 0.1;
+            this.starsGroup.add(star);
+        }
+    }
+    update(t, d) { this.starsGroup.children.iterate(s => { if(s){ s.y += s.speed * d * 0.1; if(s.y > this.scale.height) s.y = 0; } }); }
+}
+
+// ==========================================
+// SCENE 1.5: INSTRUCTIONS
+// ==========================================
+class InstructionScene extends Phaser.Scene {
+    constructor() { super('InstructionScene'); }
+    create() {
+        this.add.text(this.scale.width/2, 80, 'MISSION BRIEFING', { fontFamily: FONT_MAIN, fontSize: '40px', color: '#00ffff' }).setOrigin(0.5);
+        let content = [
+            "CONTROLS:",
+            "• WASD : Pilot Ship",
+            "• SPACE / CLICK : Fire Cannons",
+            "• SHIFT : Activate Overcharge",
+            "",
+            "POWER-UPS:",
+            "• bullet icon: Upgrade Weapons",
+            "• medkit icon: heal",
+            "",
+            "WARNING:",
+            "Taking damage reduces Weapon Level!"
+        ];
+        let startY = 150;
+        content.forEach((line, index) => {
+            let color = line.includes(':') ? '#ffffff' : '#aaaaaa';
+            if(line === "CONTROLS:" || line === "POWER-UPS:" || line === "WARNING:") color = '#00ff00';
+            this.add.text(this.scale.width/2, startY + (index * 35), line, { fontFamily: FONT_MAIN, fontSize: '20px', color: color, align: 'center' }).setOrigin(0.5);
+        });
+        new ProButton(this, this.scale.width/2, this.scale.height - 100, 'RETURN TO BASE', 0xffffff, () => this.scene.start('MainMenu'));
+    }
+}
+
+// ==========================================
+// SCENE 2: SETTINGS
+// ==========================================
+class SettingsScene extends Phaser.Scene {
+    constructor() { super('SettingsScene'); }
+    create() {
+        this.add.text(this.scale.width/2, 100, 'CONFIGURATION', { fontFamily: FONT_MAIN, fontSize: '40px', color: '#fff' }).setOrigin(0.5);
+        this.createDiffBtn(250, 'EASY', DIFFICULTIES.EASY, COLOR_ACCENT);
+        this.createDiffBtn(330, 'NORMAL', DIFFICULTIES.NORMAL, 0xffff00);
+        this.createDiffBtn(410, 'HARD', DIFFICULTIES.HARD, COLOR_DANGER);
+        new ProButton(this, this.scale.width/2, 550, 'RETURN', 0xffffff, () => this.scene.start('MainMenu'));
+    }
+    createDiffBtn(y, label, diffObj, color) {
+        let isSelected = (currentDifficulty === diffObj);
+        let txtColor = isSelected ? color : 0x444444;
+        new ProButton(this, this.scale.width/2, y, label, txtColor, () => {
+            currentDifficulty = diffObj;
+            this.scene.restart();
+        });
+        if(isSelected) this.add.text(this.scale.width/2 - 180, y, '►', { fontSize: '20px', color: '#fff' }).setOrigin(0.5);
+    }
+}
+
+// ==========================================
+// SCENE 3: GAMEPLAY (The Fun Part)
+// ==========================================
+class GameScene extends Phaser.Scene {
+    constructor() { super('GameScene'); }
+
+    create(){
+        this.cameras.main.fadeIn(500);
+        
+        // Game State
+        this.score = 0;
+        this.level = 1;
+        this.ultScore = 0;
+        this.MAX_ULT_SCORE = 100;
+        this.weaponLevel = 1; // NEW: Weapon Level
+        this.MAX_WEAPON_LEVEL = 4;
+        
+        this.isFiring = false;
+        this.isPaused = false;
+        this.lastShot = 0;
+        this.lastBossShot = 0;
+        this.lastMinionSpawn = 0;
+        this.gameOver = false;
+        
+        // Input
+        this.cursors = this.input.keyboard.addKeys({up:'W',down:'S',left:'A',right:'D'});
+        this.fireKey = this.input.keyboard.addKey('SPACE');
+        this.ultKey = this.input.keyboard.addKey('SHIFT');
+        this.pauseKey = this.input.keyboard.addKey('P');
+        this.escKey = this.input.keyboard.addKey('ESC');
+        this.input.on('pointerdown', () => this.isFiring = true);
+        this.input.on('pointerup', () => this.isFiring = false);
+
+        // Physics Groups
+        this.createStars();
+        this.bullets = this.physics.add.group();
+        this.enemies = this.physics.add.group();
+        this.enemyProjectiles = this.physics.add.group();
+        this.healthDrops = this.physics.add.group();
+        this.powerUps = this.physics.add.group(); // NEW: Powerups
+        this.ultProjectiles = this.physics.add.group();
+        this.trails = this.add.group(); // NEW: Engine Trails
+
+        // Player
+        this.player = this.physics.add.sprite(this.scale.width/2, this.scale.height-100, 'player').setScale(0.4).setCollideWorldBounds(true);
+        this.player.hp = 100;
+
+        // Sounds
+        this.fireSound = this.sound.add('fire', {volume: 0.1});
+        this.explosionSound = this.sound.add('explosion', {volume: 0.6});
+        this.bossFireSound = this.sound.add('bossFire', {volume: 0.5});
+        this.pickupSound = this.sound.add('pickup', {volume: 1.0});
+        this.ultSound = this.sound.add('ultSound', {volume: 1.0});
+        this.powerupSound = this.sound.add('pickup', {rate: 1.5, volume: 1.0}); // Higher pitch for upgrades
+
+        this.createHUD();
+
+        // Collisions
+        this.physics.add.overlap(this.bullets, this.enemies, this.bulletHitEnemy, null, this);
+        this.physics.add.overlap(this.player, this.enemies, this.playerHitShip, null, this);
+        this.physics.add.overlap(this.player, this.enemyProjectiles, this.playerHitProjectile, null, this);
+        this.physics.add.overlap(this.player, this.healthDrops, this.collectHealth, null, this);
+        this.physics.add.overlap(this.player, this.powerUps, this.collectPowerUp, null, this);
+        this.physics.add.overlap(this.ultProjectiles, this.enemies, this.ultHitEnemy, null, this);
+
+        this.spawnLevel();
+        this.events.on('resume', () => { this.isPaused = false; });
+    }
+
+    update(time, delta){
+        if(this.gameOver || this.isPaused) return;
+        
+        if(Phaser.Input.Keyboard.JustDown(this.pauseKey) || Phaser.Input.Keyboard.JustDown(this.escKey)){
+            this.scene.pause();
+            this.scene.launch('PauseScene');
+            this.isPaused = true;
+        }
+
+        this.updateStars(delta);
+        this.createEngineTrail(); // FUN: Add trail effect
+
+        // Player Move
+        this.player.setVelocity(0);
+        if(this.cursors.left.isDown) this.player.setVelocityX(-300);
+        if(this.cursors.right.isDown) this.player.setVelocityX(300);
+        if(this.cursors.up.isDown) this.player.setVelocityY(-300);
+        if(this.cursors.down.isDown) this.player.setVelocityY(300);
+
+        let pointer = this.input.activePointer;
+        let angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, pointer.x, pointer.y);
+        this.player.setRotation(angle + Phaser.Math.DegToRad(90));
+
+        if((this.fireKey.isDown || this.isFiring) && time > this.lastShot){
+            this.shoot();
+            this.lastShot = time + 150;
+        }
+
+        if(Phaser.Input.Keyboard.JustDown(this.ultKey)){
+            this.fireUlt();
+        }
+
+        // Cleanup
+        [this.bullets, this.enemyProjectiles, this.ultProjectiles, this.trails].forEach(group => {
+            group.children.iterate(b => {
+                if(b && (b.y < -50 || b.y > this.scale.height+50 || b.x < -50 || b.x > this.scale.width+50)) b.destroy();
+                // Fade trails
+                if(group === this.trails && b) {
+                    b.alpha -= 0.05;
+                    b.scale -= 0.01;
+                    if(b.alpha <= 0) b.destroy();
+                }
+            });
+        });
+
+        // Enemy Logic
+        this.enemies.children.iterate(e => {
+            if(e && e.active && !e.boss){
+                this.physics.moveToObject(e, this.player, e.speed);
+                e.setRotation(Phaser.Math.Angle.Between(e.x, e.y, this.player.x, this.player.y) + Phaser.Math.DegToRad(90));
+                
+                if(time > e.lastShot){
+                    let eb = this.enemyProjectiles.create(e.x, e.y, 'bullet').setScale(1.5).setTint(COLOR_DANGER);
+                    this.physics.moveToObject(eb, this.player, 300);
+                    e.lastShot = time + e.fireRate;
+                }
+            }
+        });
+
+        // Boss Logic
+        if(this.boss && this.boss.active){
+            let lvl = LEVELS_DATA[this.level-1];
+            this.physics.moveToObject(this.boss, this.player, lvl.bossSpeed);
+
+            if(time > this.lastBossShot){
+                let offsets = [0, -150, 150];
+                offsets.forEach(off => {
+                    let b = this.enemyProjectiles.create(this.boss.x, this.boss.y, 'bullet').setScale(2.5).setTint(0xffaa00);
+                    this.physics.moveTo(b, this.player.x + off, this.player.y, 400);
+                });
+                this.bossFireSound.play();
+                this.lastBossShot = time + lvl.bossFireRate;
+            }
+
+            if(time > this.lastMinionSpawn){
+                let m = this.enemies.create(Phaser.Math.Between(50, this.scale.width-50), -50, 'enemy').setScale(0.3);
+                m.hp = 30 * currentDifficulty.hpMult; 
+                m.speed = 150 * currentDifficulty.speedMult; 
+                m.fireRate = 1500; 
+                m.lastShot = 0; m.boss = false;
+                this.lastMinionSpawn = time + 2000;
+            }
+        }
+
+        this.updateHUD();
+        
+        if(LEVELS_DATA[this.level-1].boss){
+            if(!this.boss || this.boss.hp <= 0) this.nextLevel();
+        } else if(this.enemies.countActive() === 0){
+            this.nextLevel();
+        }
+    }
+
+    // --- GAME LOGIC ---
+
+    spawnLevel() {
+    this.enemies.clear(true, true);
+    this.bullets.clear(true, true);
+    this.enemyProjectiles.clear(true, true);
+    this.player.setPosition(this.scale.width / 2, this.scale.height - 100);
+    this.boss = null;
+    let lvl = LEVELS_DATA[this.level - 1];
+    this.cameras.main.setBackgroundColor(lvl.bg);
+
+    let label = lvl.boss ? `WARNING: BOSS DETECTED, LEVEL ${this.level}` : `LEVEL ${this.level}`;
+    let color = lvl.boss ? "#ff0000" : "#ffff00";
+    let intro = this.add.text(this.scale.width / 2, this.scale.height / 2, label, { fontFamily: FONT_MAIN, fontSize: '50px', color: color, fontStyle: 'bold' }).setOrigin(0.5).setAlpha(0).setDepth(20);
+    this.tweens.add({ targets: intro, alpha: 1, yoyo: true, duration: 1500, hold: 500 });
+
+    if (lvl.boss) {
+        // FIX: Create the boss IMMEDIATELY so the enemy count > 0
+        this.boss = this.physics.add.sprite(this.scale.width / 2, 100, 'boss').setScale(0.8);
+        this.boss.hp = lvl.bossHp * currentDifficulty.hpMult;
+        this.boss.maxHp = this.boss.hp;
+        this.boss.boss = true;
+        this.boss.name = lvl.bossName;
+        if (lvl.bossTint) this.boss.setTint(lvl.bossTint);
+        this.boss.body.setSize(this.boss.width * 0.6, this.boss.height * 0.6);
+        this.enemies.add(this.boss);
+
+        // HIDE the boss initially (make invisible and disable hitbox)
+        this.boss.setVisible(false);
+        this.boss.body.enable = false;
+
+        // ACTIVATE the boss after 2 seconds
+        this.time.delayedCall(2000, () => {
+            // Safety check in case scene ended
+            if (this.boss && this.boss.active) {
+                this.boss.setVisible(true);
+                this.boss.body.enable = true;
+                this.lastMinionSpawn = this.time.now + 1000;
+                this.cameras.main.flash(500, 255, 0, 0);
+            }
+        });
+    } else {
+        for (let i = 0; i < lvl.enemyCount; i++) {
+            let e = this.enemies.create(Phaser.Math.Between(50, this.scale.width - 50), Phaser.Math.Between(50, 150), 'enemy').setScale(0.35);
+            e.hp = lvl.enemyHp * currentDifficulty.hpMult;
+            e.speed = lvl.enemySpeed * currentDifficulty.speedMult;
+            e.fireRate = lvl.enemyFireRate; e.lastShot = 0; e.boss = false;
+        }
+    }
+}
+
+    nextLevel(){
+        this.level++;
+        if(this.level <= LEVELS_DATA.length){
+            this.spawnLevel();
+        } else {
+            this.scene.start('EndScene', {score: this.score, won: true});
+        }
+    }
+
+    // --- ENJOYABLE MECHANICS: WEAPON LEVELS & TRAILS ---
+
+    createEngineTrail() {
+        if(this.player.active) {
+            let trail = this.add.image(this.player.x, this.player.y + 20, 'star').setScale(0.3).setTint(0x00ffff).setAlpha(0.6);
+            this.trails.add(trail);
+        }
+    }
+
+    shoot(){
+        let pointer = this.input.activePointer;
+        let pX = this.player.x;
+        let pY = this.player.y;
+        
+        // Muzzle Flash
+        let flash = this.add.circle(pX, pY-30, 15, COLOR_PRIMARY, 0.8);
+        this.tweens.add({targets:flash, scale:0, duration:100, onComplete:()=>flash.destroy()});
+
+        // Weapon Logic based on Level
+        if(this.weaponLevel === 1) {
+            // SINGLE
+            this.createBullet(pX, pY-20, pointer.x, pointer.y);
+        } else if (this.weaponLevel === 2) {
+            // DUAL
+            this.createBullet(pX-15, pY-20, pointer.x-10, pointer.y);
+            this.createBullet(pX+15, pY-20, pointer.x+10, pointer.y);
+        } else if (this.weaponLevel === 3) {
+            // TRIPLE
+            this.createBullet(pX, pY-20, pointer.x, pointer.y);
+            this.createBullet(pX-20, pY-10, pointer.x-30, pointer.y);
+            this.createBullet(pX+20, pY-10, pointer.x+30, pointer.y);
+        } else {
+            // QUAD / BURST
+            this.createBullet(pX-10, pY-20, pointer.x, pointer.y);
+            this.createBullet(pX+10, pY-20, pointer.x, pointer.y);
+            this.createBullet(pX-30, pY, pointer.x-60, pointer.y);
+            this.createBullet(pX+30, pY, pointer.x+60, pointer.y);
+        }
+        this.fireSound.play();
+    }
+
+    createBullet(x, y, tx, ty) {
+        let b = this.bullets.create(x, y, 'bullet').setScale(1.2).setTint(COLOR_ACCENT);
+        if(this.weaponLevel > 2) b.setTint(COLOR_POWER); // Yellow bullets for high level
+        this.physics.moveTo(b, tx, ty, 600);
+    }
+
+    fireUlt(){
+        if(this.ultScore >= this.MAX_ULT_SCORE){
+            let ult = this.ultProjectiles.create(this.player.x, this.player.y, 'bullet').setScale(3.0).setTint(COLOR_PRIMARY);
+            let pointer = this.input.activePointer;
+            this.physics.moveTo(ult, pointer.x, pointer.y, 400);
+            ult.setAngularVelocity(300);
+            this.ultScore = 0;
+            this.cameras.main.shake(300, 0.02);
+            this.ultSound.play();
+        }
+    }
+
+    // --- COLLISIONS & DROPS ---
+
+    damageEnemy(enemy, damage){
+        enemy.hp -= damage;
+        enemy.setTint(0xffffff);
+        this.time.delayedCall(50, () => { 
+            if(enemy && enemy.active) {
+                if(enemy.boss) enemy.setTint(LEVELS_DATA[this.level-1].bossTint);
+                else enemy.clearTint(); 
+            }
+        });
+
+        if(enemy.hp <= 0){
+            this.createWarpEffect(enemy.x, enemy.y, enemy.boss ? 3 : 1);
+            
+            // DROP LOGIC
+           let rand = Math.random();
+if (rand < 0.15) { // 15% Health Drop
+    this.healthDrops.create(enemy.x, enemy.y, 'health').setScale(1.1).setVelocityY(100);
+} else if (rand > 0.85) { // 15% Powerup Drop (Yellow Orb)
+    // 1. Set scale to 0.5 (or whatever size you prefer, e.g., 0.3)
+    let pu = this.powerUps.create(enemy.x, enemy.y, 'bulletadd').setScale(0.2).setTint(COLOR_POWER);
+    
+    pu.setVelocityY(80);
+    
+    // 2. The tween line (this.tweens.add) was removed here to stop the bouncing/pulsing effect.
+}
+
+            if(enemy === this.boss){
+                this.score += 1000;
+                this.ultScore = Math.min(this.MAX_ULT_SCORE, this.ultScore + 50);
+                this.boss.destroy();
+                this.boss = null;
+            } else {
+                this.score += 10;
+                this.ultScore = Math.min(this.MAX_ULT_SCORE, this.ultScore + 10);
+                enemy.destroy();
+            }
+            this.explosionSound.play();
+        }
+    }
+
+    createWarpEffect(x, y, scale) {
+        let circle = this.add.circle(x, y, 50 * scale, COLOR_PRIMARY, 0.5);
+        this.tweens.add({ targets: circle, scale: 0, alpha: 0, duration: 300, onComplete: () => circle.destroy() });
+    }
+
+    bulletHitEnemy(bullet, enemy){ bullet.destroy(); this.damageEnemy(enemy, 20); }
+    
+    ultHitEnemy(ult, enemy){
+        if(!enemy.invulnerable){
+            this.damageEnemy(enemy, 500);
+            enemy.invulnerable = true;
+            this.time.addEvent({delay:200, callback:()=>{if(enemy) enemy.invulnerable=false;}});
+            this.cameras.main.shake(50, 0.005);
+        }
+    }
+
+    playerHitShip(player, enemy){
+        if(enemy.boss) enemy.hp -= 50;
+        else { enemy.destroy(); this.score += 10; this.createWarpEffect(enemy.x, enemy.y, 1); }
+        this.takeDamage(20);
+    }
+
+    playerHitProjectile(player, proj){ proj.destroy(); this.takeDamage(20); }
+
+    takeDamage(amount){
+        this.player.hp = Math.max(0, this.player.hp - amount);
+        this.explosionSound.play();
+        this.cameras.main.shake(100, 0.01);
+        
+        // DOWNGRADE WEAPON ON HIT
+        if(this.weaponLevel > 1) {
+            this.weaponLevel--;
+            let txt = this.add.text(this.player.x, this.player.y - 40, "WEAPON LOST!", {fontFamily:FONT_MAIN, fontSize:'16px', color:'#ff0000'}).setOrigin(0.5);
+            this.tweens.add({targets:txt, y:this.player.y-80, alpha:0, duration:1000});
+        }
+
+        if(this.player.hp <= 0){
+            this.player.setTint(COLOR_DANGER);
+            this.createWarpEffect(this.player.x, this.player.y, 2);
+            this.player.setVisible(false);
+            this.gameOver = true;
+            this.physics.pause();
+            this.time.delayedCall(1500, () => this.scene.start('EndScene', {score: this.score, won: false}));
+        } else {
+            this.player.setTint(COLOR_DANGER);
+            this.time.delayedCall(200, () => {if(this.player && this.player.active) this.player.clearTint();});
+        }
+    }
+
+    collectHealth(player, health){
+        health.destroy();
+        this.player.hp = Math.min(100, this.player.hp + 20);
+        this.pickupSound.play();
+        let healRing = this.add.circle(this.player.x, this.player.y, 30, COLOR_ACCENT, 0.5);
+        this.tweens.add({ targets: healRing, scale: 2, alpha: 0, duration: 400, onComplete:()=>healRing.destroy() });
+    }
+
+    collectPowerUp(player, powerup) {
+        powerup.destroy();
+        if(this.weaponLevel < this.MAX_WEAPON_LEVEL) {
+            this.weaponLevel++;
+            let txt = this.add.text(this.player.x, this.player.y - 40, "WEAPON UPGRADE!", {fontFamily:FONT_MAIN, fontSize:'20px', color:'#ffff00'}).setOrigin(0.5);
+            this.tweens.add({targets:txt, y:this.player.y-80, alpha:0, duration:1000});
+        } else {
+            this.score += 500; // Points if max level
+        }
+        this.powerupSound.play();
+    }
+
+    // --- HUD ---
+    createHUD() {
+        this.add.rectangle(0, 0, this.scale.width*2, 80, 0x000000, 0.6).setDepth(9);
+        this.scoreText = this.add.text(20, 20, 'SCORE: 0', { fontFamily: FONT_MAIN, fontSize:'24px', color:'#fff' }).setDepth(10);
+        this.add.text(20, 60, 'OVERCHARGE', { fontFamily: FONT_MAIN, fontSize:'14px', color: '#00ffff' }).setDepth(10);
+        this.playerHealthBar = this.add.graphics().setDepth(10);
+        this.bossHealthBar = this.add.graphics().setDepth(10);
+        this.ultBarGraphics = this.add.graphics().setDepth(10);
+        this.bossLabel = this.add.text(this.scale.width/2, 80, '', {fontFamily:FONT_MAIN, fontSize:'16px', color:'#ff0000'}).setOrigin(0.5).setDepth(10);
+    }
+
+    updateHUD(){
+        this.scoreText.setText(`SCORE: ${this.score}`);
+        // Player HP
+        const barW = 200; const barH = 15;
+        this.playerHealthBar.clear();
+        this.playerHealthBar.fillStyle(0x333333, 1);
+        this.playerHealthBar.fillRect(this.scale.width - barW - 20, 20, barW, barH);
+        this.playerHealthBar.fillStyle(this.player.hp > 30 ? COLOR_ACCENT : COLOR_DANGER, 1);
+        this.playerHealthBar.fillRect(this.scale.width - barW - 20, 20, (this.player.hp/100)*barW, barH);
+        this.playerHealthBar.lineStyle(2, 0xffffff);
+        this.playerHealthBar.strokeRect(this.scale.width - barW - 20, 20, barW, barH);
+
+        // Ult Bar
+        this.ultBarGraphics.clear();
+        this.ultBarGraphics.fillStyle(0x333333, 1); 
+        this.ultBarGraphics.fillRect(20, 80, 200, 10);
+        let ultPct = this.ultScore/this.MAX_ULT_SCORE;
+        this.ultBarGraphics.fillStyle(ultPct >= 1 ? 0xffffff : COLOR_PRIMARY, 1); 
+        this.ultBarGraphics.fillRect(20, 80, ultPct*200, 10);
+
+        // Boss HP
+        if(this.boss && this.boss.active){
+            let bX = this.scale.width/2 - 150;
+            this.bossHealthBar.clear();
+            this.bossHealthBar.fillStyle(0x333333, 0.8); 
+            this.bossHealthBar.fillRect(bX, 100, 300, 20);
+            this.bossHealthBar.fillStyle(COLOR_DANGER, 1); 
+            this.bossHealthBar.fillRect(bX, 100, (this.boss.hp/this.boss.maxHp)*300, 20);
+            this.bossHealthBar.lineStyle(2, 0xffffff); 
+            this.bossHealthBar.strokeRect(bX, 100, 300, 20);
+            this.bossLabel.setText(this.boss.name || 'WARNING: BOSS DETECTED');
+            this.bossLabel.setVisible(true);
+        } else {
+            this.bossHealthBar.clear();
+            this.bossLabel.setVisible(false);
+        }
+    }
+    
+    createStars() {
+        this.starsGroup = this.add.group();
+        for(let i=0; i<100; i++){
+            let star = this.add.image(Math.random()*this.scale.width, Math.random()*this.scale.height, 'star').setScale(Math.random()*0.5);
+            star.speed = Math.random()*0.5 + 0.2;
+            this.starsGroup.add(star);
+        }
+    }
+    updateStars(delta) { this.starsGroup.children.iterate(s => { if(s){ s.y += s.speed * delta * 0.05; if(s.y > this.scale.height) s.y = 0; } }); }
+}
+
+// ==========================================
+// SCENE 4: PAUSE
+// ==========================================
+class PauseScene extends Phaser.Scene {
+    constructor() { super('PauseScene'); }
+    create() {
+        this.add.rectangle(this.scale.width/2, this.scale.height/2, this.scale.width, this.scale.height, 0x000000, 0.7);
+        this.add.text(this.scale.width/2, this.scale.height/2 - 100, 'SYSTEM PAUSED', { fontFamily: FONT_MAIN, fontSize: '40px', color: '#fff', letterSpacing: 2 }).setOrigin(0.5);
+        new ProButton(this, this.scale.width/2, this.scale.height/2, 'RESUME', COLOR_ACCENT, () => { this.scene.stop(); this.scene.resume('GameScene'); });
+        new ProButton(this, this.scale.width/2, this.scale.height/2 + 70, 'ABORT MISSION', COLOR_DANGER, () => { this.scene.stop('GameScene'); this.scene.start('MainMenu'); });
+        this.input.keyboard.on('keydown-P', () => { this.scene.stop(); this.scene.resume('GameScene'); });
+        this.input.keyboard.on('keydown-ESC', () => { this.scene.stop(); this.scene.resume('GameScene'); });
+    }
+}
+
+// ==========================================
+// SCENE 5: END
+// ==========================================
+class EndScene extends Phaser.Scene {
+    constructor() { super('EndScene'); }
+    
+    init(data) { 
+        this.finalScore = data.score || 0; 
+        this.won = data.won || false; 
+    }
+
+    create() {
+        this.createBackground();
+
+        // --- CHANGES START HERE ---
+        // 1. Define Title: 'You Won' or 'You Lost'
+        let title = this.won ? 'You Won' : 'You Lost';
+        
+        // 2. Define Color: Green (0x00ff00) or Red (COLOR_DANGER)
+        let color = this.won ? 0x00ff00 : COLOR_DANGER;
+        // --------------------------
+
+        this.add.text(this.scale.width/2, this.scale.height/3, title, { 
+            fontFamily: FONT_MAIN, 
+            fontSize: '50px', 
+            // .padStart ensures 0x00ff00 becomes "00ff00" instead of just "ff00"
+            color: '#' + color.toString(16).padStart(6, '0') 
+        }).setOrigin(0.5);
+
+        this.add.text(this.scale.width/2, this.scale.height/2, `FINAL SCORE: ${this.finalScore}`, { 
+            fontFamily: FONT_MAIN, 
+            fontSize: '30px', 
+            color: '#fff' 
+        }).setOrigin(0.5);
+
+        // Apply the same color to the Retry button
+        new ProButton(this, this.scale.width/2, this.scale.height/2 + 100, 'PLAY AGAIN', color, () => { 
+            this.scene.start('GameScene'); 
+        });
+
+        new ProButton(this, this.scale.width/2, this.scale.height/2 + 170, 'MAIN MENU', 0xffffff, () => { 
+            this.scene.start('MainMenu'); 
+        });
+    }
+
+    createBackground() {
+        this.starsGroup = this.add.group();
+        for(let i=0; i<60; i++){ 
+            let star = this.add.image(Math.random()*this.scale.width, Math.random()*this.scale.height, 'star').setScale(Math.random()*0.5); 
+            this.starsGroup.add(star); 
+        }
+    }
+}
+
+// ==========================================
+// CONFIGURATION
+// ==========================================
+const config = {
+    type: Phaser.AUTO,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    physics: { default:'arcade', arcade:{debug:false} },
+    scene: [MainMenu, InstructionScene, SettingsScene, GameScene, PauseScene, EndScene]
+};
+
+const game = new Phaser.Game(config);
+window.addEventListener('resize', () => { game.scale.resize(window.innerWidth, window.innerHeight); });
+
+</script>
+</body>
+</html>
