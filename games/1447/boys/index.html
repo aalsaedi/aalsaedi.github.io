@@ -1,33 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Game Design and Programming - 1447</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-<html>
- <head>
-  <title>Index of aalsaedi.github.io/games/1447/boys</title>
- </head>
- <body>
-<h1>Index of aalsaedi.github.io/games/1447/boys</h1>
-<ul><li><a href="/aalsaedi.github.io/games/1447/"> Parent Directory</a></li>
-<li><a href="2d_car_drive/"> 2d_car_drive/</a></li>
-<li><a href="astro_blaster/"> astro_blaster/</a></li>
-<li><a href="blast_jump/"> blast_jump/</a></li>
-<li><a href="coin_hunter/"> coin_hunter/</a></li>
-<li><a href="coin_hunter2/"> coin_hunter2/</a></li>
-<li><a href="coin_runner/"> coin_runner/</a></li>
-<li><a href="deep_sea_project/"> deep_sea_project/</a></li>
-<li><a href="defence_shooter/"> defence_shooter/</a></li>
-<li><a href="flappy_gravity/"> flappy_gravity/</a></li>
-<li><a href="hot_pursuit/"> hot_pursuit/</a></li>
-<li><a href="hunt_the_duck/"> hunt_the_duck/</a></li>
-<li><a href="legends_of_cit/"> legends_of_cit/</a></li>
-<li><a href="platformer_assignment/"> platformer_assignment/</a></li>
-<li><a href="player_demo/"> player_demo/</a></li>
-<li><a href="red_rain/"> red_rain/</a></li>
-<li><a href="rock_escape/"> rock_escape/</a></li>
-<li><a href="sequence_knight/"> sequence_knight/</a></li>
-<li><a href="sky_runner/"> sky_runner/</a></li>
-<li><a href="space_defender/"> space_defender/</a></li>
-<li><a href="star_collector/"> star_collector/</a></li>
-<li><a href="the_graveyard/"> the_graveyard/</a></li>
-<li><a href="vampire_survivor/"> vampire_survivor/</a></li>
-</ul>
-</body></html>
+<style>
+:root {
+  --accent: #2563eb;
+  --winner: #facc15;
+  --text: #0f172a;
+  --muted: #475569;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 2rem;
+  background: linear-gradient(180deg, #e0f2fe, #f8fafc);
+  color: var(--text);
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.header h2 {
+  font-size: 2.2rem;
+  color: #1e40af;
+  margin-bottom: 0.4rem;
+}
+
+.header h3 {
+  font-size: 1.2rem;
+  color: #334155;
+  margin-bottom: 1rem;
+}
+
+.tagline {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #16a34a;
+  margin-bottom: 1.5rem;
+}
+
+blockquote {
+  max-width: 720px;
+  margin: auto;
+  font-size: 1rem;
+  color: #475569;
+  font-style: italic;
+  background: #f1f5f9;
+  padding: 1.3rem 1.6rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+blockquote span {
+  display: block;
+  margin-top: 0.8rem;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+/* Shared card styles */
+.card {
+  background: linear-gradient(145deg, #ffffff, #f1f5f9);
+  border-radius: 20px;
+  padding: 1.5rem;
+  text-decoration: none;
+  color: var(--text);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+}
+
+.icon {
+  font-size: 3rem;
+  margin-bottom: 0.8rem;
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  text-transform: capitalize;
+}
+
+.play {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Winner section */
+.winner-section {
+  display: flex;
+  justify-content: center;
+  margin: 4rem 0; /* SPACE ABOVE & BELOW */
+}
+
+.winner {
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  background: linear-gradient(145deg, #fff9c4, #fde047);
+  border: 3px solid #f59e0b;
+}
+
+.winner .title {
+  font-size: 1.4rem;
+  color: #92400e;
+}
+
+.winner .play {
+  color: #92400e;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+/* Games grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.6rem;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.grid .card:nth-child(4n+1) .play { color: #2563eb; }
+.grid .card:nth-child(4n+2) .play { color: #16a34a; }
+.grid .card:nth-child(4n+3) .play { color: #ea580c; }
+.grid .card:nth-child(4n+4) .play { color: #9333ea; }
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>Game Design and Programming – 1447</h2>
+  <h3>Dr. Abdullah Alsaedi</h3>
+  <p class="tagline">Enjoy your games 🎮</p>
+
+  <blockquote>
+    “The supreme accomplishment is to blur the line between work and play.”
+    <span>— Arnold J. Toynbee</span>
+  </blockquote>
+</div>
+
+<!-- Winner Game (CENTERED) -->
+<div class="winner-section">
+  <a class="card winner" href="sequence_knight/">
+    <div class="icon">🏆</div>
+    <div class="title">Sequence Knight</div>
+    <div class="play">Winner Game – Play Now</div>
+  </a>
+</div>
+
+<!-- All Games -->
+<div class="grid">
+  <a class="card" href="2d_car_drive/"><div class="icon">🚗</div><div class="title">2D Car Drive</div><div class="play">Play Game</div></a>
+  <a class="card" href="astro_blaster/"><div class="icon">🚀</div><div class="title">Astro Blaster</div><div class="play">Play Game</div></a>
+  <a class="card" href="blast_jump/"><div class="icon">💥</div><div class="title">Blast Jump</div><div class="play">Play Game</div></a>
+  <a class="card" href="coin_hunter/"><div class="icon">🪙</div><div class="title">Coin Hunter</div><div class="play">Play Game</div></a>
+  <a class="card" href="coin_hunter2/"><div class="icon">💰</div><div class="title">Coin Hunter 2</div><div class="play">Play Game</div></a>
+  <a class="card" href="coin_runner/"><div class="icon">🏃</div><div class="title">Coin Runner</div><div class="play">Play Game</div></a>
+  <a class="card" href="deep_sea_project/"><div class="icon">🌊</div><div class="title">Deep Sea Project</div><div class="play">Play Game</div></a>
+  <a class="card" href="defence_shooter/"><div class="icon">🎯</div><div class="title">Defence Shooter</div><div class="play">Play Game</div></a>
+  <a class="card" href="flappy_gravity/"><div class="icon">🕊️</div><div class="title">Flappy Gravity</div><div class="play">Play Game</div></a>
+  <a class="card" href="hot_pursuit/"><div class="icon">🚓</div><div class="title">Hot Pursuit</div><div class="play">Play Game</div></a>
+  <a class="card" href="hunt_the_duck/"><div class="icon">🦆</div><div class="title">Hunt The Duck</div><div class="play">Play Game</div></a>
+  <a class="card" href="legends_of_cit/"><div class="icon">⚔️</div><div class="title">Legends of CIT</div><div class="play">Play Game</div></a>
+  <a class="card" href="platformer_assignment/"><div class="icon">🧱</div><div class="title">Platformer Assignment</div><div class="play">Play Game</div></a>
+  <a class="card" href="player_demo/"><div class="icon">🎮</div><div class="title">Player Demo</div><div class="play">Play Game</div></a>
+  <a class="card" href="red_rain/"><div class="icon">🌧️</div><div class="title">Red Rain</div><div class="play">Play Game</div></a>
+  <a class="card" href="rock_escape/"><div class="icon">🪨</div><div class="title">Rock Escape</div><div class="play">Play Game</div></a>
+  <a class="card" href="sky_runner/"><div class="icon">☁️</div><div class="title">Sky Runner</div><div class="play">Play Game</div></a>
+  <a class="card" href="space_defender/"><div class="icon">🛸</div><div class="title">Space Defender</div><div class="play">Play Game</div></a>
+  <a class="card" href="star_collector/"><div class="icon">⭐</div><div class="title">Star Collector</div><div class="play">Play Game</div></a>
+  <a class="card" href="the_graveyard/"><div class="icon">🪦</div><div class="title">The Graveyard</div><div class="play">Play Game</div></a>
+  <a class="card" href="vampire_survivor/"><div class="icon">🧛</div><div class="title">Vampire Survivor</div><div class="play">Play Game</div></a>
+</div>
+
+</body>
+</html>
