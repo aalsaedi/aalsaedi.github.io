@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>استعلام مشروع المقرر | تطبيقات الذكاء الاصطناعي</title>
+  <meta name="description" content="واجهة بسيطة لطلاب مقرر تطبيقات الذكاء الاصطناعي لإرسال النص المطلوب واستقبال النتيجة مباشرة باستخدام مساعد دعوى الذكي.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f8fc;
+      --surface: #ffffff;
+      --surface-soft: #f9fbff;
+      --ink: #16324f;
+      --muted: #63748a;
+      --line: #dbe4f0;
+      --brand: #0d6efd;
+      --brand-2: #18a0b6;
+      --ok: #0d8c67;
+      --error: #c84d4d;
+      --shadow: 0 18px 45px rgba(19, 45, 82, 0.08);
+      --radius: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Alexandria", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top right, rgba(13, 110, 253, 0.08), transparent 28%),
+        linear-gradient(180deg, #fbfcff 0%, var(--bg) 100%);
+    }
+
+    .page {
+      width: min(880px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 34px 0 40px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.4;
+    }
+
+    .pill::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    }
+
+    h1 {
+      margin: 16px 0 8px;
+      font-size: clamp(1.45rem, 3.4vw, 2.2rem);
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+    }
+
+    .hero p {
+      margin: 0 auto;
+      max-width: 36rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.85;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid rgba(219, 228, 240, 0.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: clamp(18px, 4vw, 28px);
+    }
+
+    .brand {
+      display: grid;
+      justify-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #f7faff;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+
+    .brand-mark {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .brand-mark img {
+      display: block;
+      width: min(82px, 22vw);
+      height: auto;
+    }
+
+    .brand h2 {
+      margin: 0;
+      font-size: 1.45rem;
+      letter-spacing: -0.04em;
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.8;
+    }
+
+    form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      position: relative;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 260px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--surface-soft);
+      padding: 20px 20px 54px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 1rem;
+      line-height: 1.95;
+      transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    textarea::placeholder {
+      color: #8090a3;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: rgba(13, 110, 253, 0.35);
+      box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.08);
+      background: #ffffff;
+    }
+
+    .counter {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.95);
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 16px;
+      padding: 13px 16px;
+      font: inherit;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: transform 160ms ease, opacity 160ms ease, box-shadow 160ms ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.72;
+      cursor: wait;
+    }
+
+    .primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      box-shadow: 0 14px 28px rgba(13, 110, 253, 0.18);
+    }
+
+    .secondary {
+      color: var(--ink);
+      background: #f4f7fb;
+      border: 1px solid var(--line);
+    }
+
+    .status {
+      min-height: 26px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.75;
+    }
+
+    .status[data-kind="ok"] {
+      color: var(--ok);
+    }
+
+    .status[data-kind="error"] {
+      color: var(--error);
+    }
+
+    .result {
+      margin-top: 16px;
+      padding: 18px 18px 16px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: #fcfdff;
+    }
+
+    .result-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .result-head h3 {
+      margin: 0;
+      font-size: 0.98rem;
+    }
+
+    .result-meta {
+      color: var(--muted);
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    .result-body {
+      color: var(--ink);
+      font-size: 0.96rem;
+      line-height: 1.95;
+    }
+
+    .result-body p {
+      margin: 0 0 12px;
+    }
+
+    .result-body ul,
+    .result-body ol {
+      margin: 0 0 12px;
+      padding: 0 20px 0 0;
+    }
+
+    .result-body li + li {
+      margin-top: 7px;
+    }
+
+    .placeholder {
+      color: var(--muted);
+    }
+
+    .loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+    }
+
+    .loading::before {
+      content: "";
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(13, 110, 253, 0.18);
+      border-top-color: var(--brand);
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .sources {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .sources h4 {
+      margin: 0 0 10px;
+      font-size: 0.9rem;
+    }
+
+    .source-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .source-list a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      text-decoration: none;
+      color: var(--ink);
+      background: #f3f7fc;
+      border: 1px solid var(--line);
+      font-size: 0.83rem;
+    }
+
+    .source-list small {
+      color: var(--muted);
+      font-size: 0.74rem;
+    }
+
+    code {
+      font-family: "SFMono-Regular", ui-monospace, monospace;
+      font-size: 0.9em;
+    }
+
+    @media (max-width: 680px) {
+      .page {
+        width: min(880px, calc(100% - 18px));
+        padding-top: 18px;
+      }
+
+      .actions,
+      .result-head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .buttons button {
+        flex: 1 1 180px;
+      }
+
+      .result-meta {
+        white-space: normal;
+      }
+
+      textarea {
+        min-height: 220px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div class="pill">موعد التسليم: الأحد 21 ذو الحجة 1447 هـ الموافق 7 يونيو 2026</div>
+      <h1>مشروع مقرر تطبيقات الذكاء الاصطناعي</h1>
+      <p>واجهة الأداة الثالثة والإضافية للاستعلام وتحليل ومقارنة أدوات الذكاء الاصطناعي في اتخاذ القرار القانوني.</p>
+    </header>
+
+    <section class="panel">
+      <div class="brand" aria-label="شعار دعوى">
+        <div class="brand-badge">
+          <span>المساعد القانوني الذكي من </span>
+          <div class="brand-mark">
+            <img src="https://daawasa.com/images/vKwlP7GZpUeJJCHALKcT.png" alt="دعوى">
+          </div>
+        </div>
+      </div>
+
+      <form id="askForm">
+        <div class="field">
+          <textarea id="questionInput" name="question" placeholder="اكتب السؤال هنا أو الصق النص المطلوب للمشروع..." aria-label="نص السؤال أو الطلب"></textarea>
+          <div class="counter" id="counter">0 حرف</div>
+        </div>
+
+        <div class="actions">
+          <div class="buttons">
+            <button class="primary" id="submitButton" type="submit">إرسال</button>
+            <button class="secondary" id="fillProjectPrompt" type="button">إدراج النص المطلوب</button>
+            <button class="secondary" id="clearButton" type="button">مسح</button>
+          </div>
+          <div class="status" id="statusMessage" aria-live="polite"></div>
+        </div>
+      </form>
+
+      <section class="result" aria-labelledby="resultTitle">
+        <div class="result-head">
+          <h3 id="resultTitle">النتيجة</h3>
+          <div class="result-meta" id="resultMeta">بانتظار الإرسال</div>
+        </div>
+        <div class="result-body" id="resultBody">
+          <div class="placeholder">سيظهر الرد هنا بعد إرسال الطلب.</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const PROJECT_PROMPT = `قم بتحليل الحالة القانونية التالية، وحدد ما إذا كان المتهم مذنباً أم لا.
+اذكر التبرير بشكل واضح بناءً على المعطيات المتوفرة، وحدد النقاط التي اعتمدت عليها في التحليل.
+اقترح أيضاً الحكم المتوقع أو القرار المناسب في هذه الحالة.
+
+الحالة:
+تم اتهام موظف بسرقة معلومات سرية من الشركة ونقلها إلى جهة منافسة.
+
+الأدلة المتوفرة:
+- تسجيل دخول الموظف إلى النظام في وقت متأخر
+- نقل ملفات من جهاز العمل إلى وحدة تخزين خارجية (USB)
+- لا يوجد دليل مباشر على تسليم البيانات إلى المنافس
+- الموظف ينكر التهمة`;
+
+    const params = new URLSearchParams(window.location.search);
+    const API_URL = params.get("api") || "https://daawasa.com/ask";
+
+    const askForm = document.getElementById("askForm");
+    const questionInput = document.getElementById("questionInput");
+    const fillProjectPromptButton = document.getElementById("fillProjectPrompt");
+    const clearButton = document.getElementById("clearButton");
+    const submitButton = document.getElementById("submitButton");
+    const counter = document.getElementById("counter");
+    const statusMessage = document.getElementById("statusMessage");
+    const resultBody = document.getElementById("resultBody");
+    const resultMeta = document.getElementById("resultMeta");
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function updateCounter() {
+      counter.textContent = `${questionInput.value.trim().length} حرف`;
+    }
+
+    function setStatus(message, kind = "") {
+      statusMessage.textContent = message;
+      statusMessage.dataset.kind = kind;
+    }
+
+    function setLoadingState(isLoading) {
+      submitButton.disabled = isLoading;
+      fillProjectPromptButton.disabled = isLoading;
+      clearButton.disabled = isLoading;
+      questionInput.disabled = isLoading;
+      submitButton.textContent = isLoading ? "جارٍ الإرسال..." : "إرسال";
+    }
+
+    function sanitizeAnswerHtml(rawHtml) {
+      if (!rawHtml || typeof rawHtml !== "string") {
+        return "<p>لم تصل إجابة قابلة للعرض.</p>";
+      }
+
+      const allowedTags = new Set(["P", "BR", "UL", "OL", "LI", "STRONG", "B", "EM", "I", "A", "BLOCKQUOTE", "H3", "H4", "CODE"]);
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(`<div>${rawHtml}</div>`, "text/html");
+
+      const clean = (node) => {
+        const children = [...node.children];
+
+        children.forEach((child) => {
+          clean(child);
+
+          if (!allowedTags.has(child.tagName)) {
+            child.replaceWith(...child.childNodes);
+            return;
+          }
+
+          [...child.attributes].forEach((attribute) => {
+            const isSafeHref = child.tagName === "A" && attribute.name === "href";
+            if (!isSafeHref) {
+              child.removeAttribute(attribute.name);
+            }
+          });
+
+          if (child.tagName === "A") {
+            const href = child.getAttribute("href") || "";
+            if (!href.startsWith("http://") && !href.startsWith("https://")) {
+              child.removeAttribute("href");
+            } else {
+              child.setAttribute("target", "_blank");
+              child.setAttribute("rel", "noreferrer");
+            }
+          }
+        });
+      };
+
+      clean(doc.body);
+      return doc.body.innerHTML || `<p>${escapeHtml(rawHtml)}</p>`;
+    }
+
+    function renderPlaceholder(message) {
+      resultBody.innerHTML = `<div class="placeholder">${escapeHtml(message)}</div>`;
+      resultMeta.textContent = "بانتظار الإرسال";
+    }
+
+    function renderLoading() {
+      resultBody.innerHTML = '<div class="loading">يتم الآن تجهيز الرد...</div>';
+      resultMeta.textContent = "جارٍ المعالجة";
+    }
+
+    function renderResponse(data, durationMs) {
+      const answerHtml = sanitizeAnswerHtml(data.answer);
+      const sources = Array.isArray(data.sources) ? data.sources : [];
+
+      let sourcesHtml = "";
+      if (sources.length) {
+        const items = sources.map((source) => {
+          const title = escapeHtml(source.title || "مصدر");
+          const label = escapeHtml(source.source || "");
+          const href = typeof source.url === "string" ? source.url : "#";
+          const safeHref = href.startsWith("http://") || href.startsWith("https://") ? href : "#";
+
+          return `<a href="${safeHref}" target="_blank" rel="noreferrer"><span>${title}</span><small>${label}</small></a>`;
+        }).join("");
+
+        sourcesHtml = `<section class="sources"><h4>المصادر</h4><div class="source-list">${items}</div></section>`;
+      }
+
+      resultBody.innerHTML = `${answerHtml}${sourcesHtml}`;
+      resultMeta.textContent = `تم الاستلام خلال ${(durationMs / 1000).toFixed(2)} ثانية`;
+    }
+
+    function explainError(error) {
+      if (error instanceof Error && error.message.startsWith("HTTP ")) {
+        return `تعذر إكمال الطلب من الخادم (${escapeHtml(error.message)}).`;
+      }
+
+      if (error instanceof TypeError) {
+        return "تعذر الوصول إلى خدمة دعوى. تحقق من إعدادات CORS و HTTPS في nginx على daawasa.com.";
+      }
+
+      return "تعذر إكمال الطلب حالياً. حاول مرة أخرى.";
+    }
+
+    fillProjectPromptButton.addEventListener("click", () => {
+      questionInput.value = PROJECT_PROMPT;
+      updateCounter();
+      setStatus("تم إدراج النص المطلوب.", "ok");
+      questionInput.focus();
+    });
+
+    clearButton.addEventListener("click", () => {
+      questionInput.value = "";
+      updateCounter();
+      setStatus("", "");
+      renderPlaceholder("سيظهر الرد هنا بعد إرسال الطلب.");
+      questionInput.focus();
+    });
+
+    questionInput.addEventListener("input", updateCounter);
+    questionInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+        askForm.requestSubmit();
+      }
+    });
+
+    askForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const question = questionInput.value.trim();
+      if (!question) {
+        setStatus("اكتب السؤال أولاً.", "error");
+        questionInput.focus();
+        return;
+      }
+
+      setLoadingState(true);
+      setStatus("تم إرسال الطلب.", "");
+      renderLoading();
+
+      const startedAt = performance.now();
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ question })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        renderResponse(data, performance.now() - startedAt);
+        setStatus("تم استلام الرد بنجاح.", "ok");
+      } catch (error) {
+        const message = explainError(error);
+        renderPlaceholder(message);
+        setStatus(message, "error");
+      } finally {
+        setLoadingState(false);
+      }
+    });
+
+    updateCounter();
+  </script>
+</body>
+</html>
