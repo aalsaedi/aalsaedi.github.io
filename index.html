@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Abdullah Alsaedi is an Assistant Professor and AI Engineer specializing in applied AI, MLOps, LLMOps, Arabic NLP, AI agents, and reliable language-model evaluation.">
+  <meta name="theme-color" content="#f6f4ee">
+  <meta property="og:type" content="profile">
+  <meta property="og:title" content="Abdullah Alsaedi — AI Engineer, MLOps &amp; Arabic NLP">
+  <meta property="og:description" content="Assistant Professor and AI Engineer working across applied AI, MLOps, Arabic NLP, AI agents, and reliable model evaluation.">
+  <meta property="og:url" content="https://aalsaedi.github.io/">
+  <meta name="twitter:card" content="summary">
+  <title>Abdullah Alsaedi — AI Engineer, MLOps &amp; Arabic NLP</title>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Abdullah Alsaedi",
+      "url": "https://aalsaedi.github.io/",
+      "jobTitle": "Assistant Professor and AI Engineer",
+      "affiliation": {
+        "@type": "CollegeOrUniversity",
+        "name": "Taif University"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/in/abdullah--alsaedi/",
+        "https://scholar.google.com/citations?user=uLI3J-oAAAAJ&hl=ar",
+        "https://github.com/aalsaedi"
+      ],
+      "knowsAbout": [
+        "AI Engineering",
+        "Applied Machine Learning",
+        "MLOps",
+        "LLMOps",
+        "Arabic Natural Language Processing",
+        "Large Language Models",
+        "AI Agents",
+        "Function Calling",
+        "Model Deployment",
+        "Model Evaluation and Monitoring"
+      ]
+    }
+  </script>
+  <style>
+    :root {
+      --paper: #f6f4ee;
+      --surface: #fffefa;
+      --ink: #14231f;
+      --muted: #5f6b66;
+      --accent: #176b5b;
+      --line: rgba(20, 35, 31, 0.14);
+      --page: 70rem;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 87% 4%, rgba(23, 107, 91, 0.11), transparent 24rem),
+        var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    a:focus-visible {
+      outline: 3px solid rgba(23, 107, 91, 0.35);
+      outline-offset: 4px;
+      border-radius: 0.3rem;
+    }
+
+    .shell {
+      width: min(calc(100% - 2.5rem), var(--page));
+      margin-inline: auto;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 4.75rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .wordmark {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    nav {
+      display: flex;
+      gap: clamp(1rem, 3vw, 2rem);
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    nav a:hover { color: var(--accent); }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(16rem, 0.65fr);
+      gap: clamp(2.5rem, 7vw, 6rem);
+      align-items: end;
+      padding: clamp(3.5rem, 7vw, 5.25rem) 0 clamp(3rem, 6vw, 4rem);
+    }
+
+    .kicker {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin: 0 0 1rem;
+      color: var(--accent);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .kicker::before {
+      content: "";
+      width: 2rem;
+      height: 1px;
+      background: currentColor;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1, h2 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 500;
+      letter-spacing: -0.045em;
+    }
+
+    h1 {
+      margin-bottom: 0.65rem;
+      font-size: clamp(3.5rem, 8.5vw, 7rem);
+      line-height: 0.9;
+    }
+
+    .specialism {
+      margin-bottom: 1.35rem;
+      color: var(--accent);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.45rem, 3vw, 2.25rem);
+      line-height: 1.2;
+    }
+
+    .intro {
+      max-width: 42rem;
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 1.8vw, 1.14rem);
+    }
+
+    .profile-links {
+      display: grid;
+      gap: 0.7rem;
+      padding: 1.5rem;
+      background: rgba(255, 254, 250, 0.7);
+      border: 1px solid var(--line);
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 55px rgba(29, 54, 47, 0.07);
+    }
+
+    .profile-links > span {
+      margin-bottom: 0.15rem;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .profile-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 2.6rem;
+      padding-bottom: 0.65rem;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.9rem;
+      font-weight: 750;
+    }
+
+    .profile-link:last-child { padding-bottom: 0; border-bottom: 0; }
+    .profile-link:hover { color: var(--accent); }
+
+    .overview {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel {
+      padding: clamp(2rem, 5vw, 3.5rem) clamp(1.5rem, 5vw, 4rem) clamp(2.25rem, 5vw, 3.75rem) 0;
+    }
+
+    .panel + .panel {
+      padding-right: 0;
+      padding-left: clamp(1.5rem, 5vw, 4rem);
+      border-left: 1px solid var(--line);
+    }
+
+    .section-label {
+      margin-bottom: 0.7rem;
+      color: var(--accent);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin-bottom: 1.35rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1;
+    }
+
+    .capability-list {
+      border-top: 1px solid var(--line);
+    }
+
+    .capability {
+      display: grid;
+      grid-template-columns: minmax(9rem, 0.4fr) minmax(0, 0.6fr);
+      gap: 1.25rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .capability h3 {
+      margin-bottom: 0;
+      font-size: 0.88rem;
+      line-height: 1.4;
+    }
+
+    .capability p {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.55;
+    }
+
+    .focus-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      margin: 1.2rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .focus-list li {
+      padding: 0.55rem 0.8rem;
+      color: var(--muted);
+      background: rgba(255, 254, 250, 0.62);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 0.82rem;
+    }
+
+    .teaching-links { display: grid; border-top: 1px solid var(--line); }
+    .teaching-link {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      padding: 0.9rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .teaching-link strong { display: block; font-size: 0.92rem; }
+    .teaching-link small { color: var(--muted); font-size: 0.75rem; }
+    .teaching-link:hover { color: var(--accent); }
+
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      min-height: 5rem;
+      color: var(--muted);
+      font-size: 0.77rem;
+    }
+
+    footer p { margin-bottom: 0; }
+
+    @media (max-width: 760px) {
+      .hero, .overview { grid-template-columns: 1fr; }
+      .hero { gap: 2.25rem; }
+      .profile-links { max-width: 28rem; }
+      .panel, .panel + .panel { padding: 2.5rem 0; }
+      .panel + .panel { border-top: 1px solid var(--line); border-left: 0; }
+    }
+
+    @media (max-width: 520px) {
+      .shell { width: min(calc(100% - 1.5rem), var(--page)); }
+      header { min-height: 4.25rem; }
+      nav a:first-child { display: none; }
+      .hero { padding: 3.5rem 0 3rem; }
+      h1 { font-size: clamp(3.25rem, 18vw, 4.75rem); }
+      .capability { grid-template-columns: 1fr; gap: 0.3rem; }
+      footer { display: block; padding: 1.4rem 0; }
+      footer p + p { margin-top: 0.3rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="shell">
+    <a class="wordmark" href="#top">Abdullah Alsaedi</a>
+    <nav aria-label="Primary navigation">
+      <a href="#expertise">Expertise</a>
+      <a href="#teaching">Teaching</a>
+      <a href="#profiles">Profiles</a>
+    </nav>
+  </header>
+
+  <main id="top" class="shell">
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <p class="kicker">Assistant Professor · AI Engineer · Researcher</p>
+        <h1 id="page-title">Abdullah Alsaedi</h1>
+        <p class="specialism">Applied AI, MLOps &amp; Arabic NLP</p>
+        <p class="intro">
+          I bridge AI research and engineering to build reliable, production-ready
+          intelligent systems. My work spans Arabic language models, AI agents,
+          tool use, MLOps pipelines, deployment, monitoring, and rigorous evaluation.
+        </p>
+      </div>
+
+      <aside id="profiles" class="profile-links" aria-label="Professional and academic profiles">
+        <span>Professional &amp; academic profiles</span>
+        <a class="profile-link" href="https://www.linkedin.com/in/abdullah--alsaedi/" rel="me">
+          LinkedIn <span aria-hidden="true">↗</span>
+        </a>
+        <a class="profile-link" href="https://scholar.google.com/citations?user=uLI3J-oAAAAJ&amp;hl=ar" rel="me">
+          Google Scholar <span aria-hidden="true">↗</span>
+        </a>
+        <a class="profile-link" href="https://github.com/aalsaedi" rel="me">
+          GitHub <span aria-hidden="true">↗</span>
+        </a>
+      </aside>
+    </section>
+
+    <div class="overview">
+      <section id="expertise" class="panel" aria-labelledby="expertise-title">
+        <p class="section-label">Engineering &amp; Research</p>
+        <h2 id="expertise-title">From research to production.</h2>
+
+        <div class="capability-list">
+          <article class="capability">
+            <h3>AI Engineering</h3>
+            <p>Designing practical AI systems that connect models, data, tools, and real-world applications.</p>
+          </article>
+          <article class="capability">
+            <h3>MLOps &amp; LLMOps</h3>
+            <p>Building reproducible workflows for experimentation, deployment, monitoring, and continuous evaluation.</p>
+          </article>
+          <article class="capability">
+            <h3>Arabic NLP &amp; Language Models</h3>
+            <p>Advancing Arabic-capable models and studying their linguistic, reasoning, and evaluation challenges.</p>
+          </article>
+          <article class="capability">
+            <h3>AI Agents &amp; Tool Use</h3>
+            <p>Developing and evaluating agents, function calling, structured actions, and tool-augmented workflows.</p>
+          </article>
+        </div>
+
+        <ul class="focus-list">
+          <li>AI Engineering</li>
+          <li>Applied Machine Learning</li>
+          <li>MLOps &amp; LLMOps</li>
+          <li>Arabic NLP &amp; LLMs</li>
+          <li>AI Agents &amp; Function Calling</li>
+          <li>Deployment, Evaluation &amp; Monitoring</li>
+        </ul>
+      </section>
+
+      <section id="teaching" class="panel" aria-labelledby="teaching-title">
+        <p class="section-label">Academic &amp; Teaching</p>
+        <h2 id="teaching-title">Learning by building.</h2>
+        <div class="teaching-links">
+          <a class="teaching-link" href="./ai-applications/">
+            <span><strong>AI Applications</strong><small>Course activity</small></span>
+            <span aria-hidden="true">↗</span>
+          </a>
+          <a class="teaching-link" href="./games/">
+            <span><strong>Student Game Projects</strong><small>35 playable course projects · 1446–1447 AH</small></span>
+            <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="shell">
+    <p>© 2026 Abdullah Alsaedi</p>
+    <p>Taif University · Saudi Arabia</p>
+  </footer>
+</body>
+</html>

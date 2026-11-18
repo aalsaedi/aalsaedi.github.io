@@ -1,11 +1,476 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; URL='https://aalsaedi.github.io/games/1446/girls'">
-    <title>Redirecting...</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A catalog of student projects from the Game Design and Programming course taught by Dr. Abdullah Alsaedi.">
+  <meta name="theme-color" content="#f6f4ee">
+  <title>Student Game Projects — Abdullah Alsaedi</title>
+  <style>
+    :root {
+      --paper: #f6f4ee;
+      --surface: #fffefa;
+      --ink: #14231f;
+      --muted: #64706b;
+      --accent: #176b5b;
+      --accent-soft: #dcebe6;
+      --line: rgba(20, 35, 31, 0.14);
+      --page: 72rem;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 90% 0%, rgba(23, 107, 91, 0.12), transparent 27rem),
+        var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible {
+      outline: 3px solid rgba(23, 107, 91, 0.35);
+      outline-offset: 3px;
+    }
+
+    .shell {
+      width: min(calc(100% - 2.5rem), var(--page));
+      margin-inline: auto;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 4.75rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .back {
+      color: var(--muted);
+      font-size: 0.83rem;
+      font-weight: 750;
+    }
+
+    .back:hover { color: var(--accent); }
+
+    .message {
+      position: relative;
+      overflow: hidden;
+      margin-top: 1.5rem;
+      padding: clamp(1.9rem, 4vw, 3rem) clamp(1.5rem, 5vw, 4rem);
+      color: var(--surface);
+      background: var(--ink);
+      border-radius: 1.5rem;
+      text-align: center;
+    }
+
+    .message::after {
+      content: "“";
+      position: absolute;
+      right: clamp(1rem, 5vw, 4rem);
+      bottom: -0.42em;
+      color: rgba(255, 255, 255, 0.06);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(12rem, 28vw, 24rem);
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .message blockquote {
+      position: relative;
+      z-index: 1;
+      max-width: 27ch;
+      margin: 0 auto;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.85rem, 4vw, 3.5rem);
+      font-weight: 500;
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+    }
+
+    .message footer {
+      display: block;
+      margin-top: 1rem;
+      padding: 0;
+      color: rgba(255, 254, 250, 0.66);
+      border: 0;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.78rem;
+      font-style: normal;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(15rem, 0.55fr);
+      gap: clamp(2.5rem, 8vw, 7rem);
+      align-items: end;
+      padding: clamp(2.75rem, 6vw, 4.25rem) 0 clamp(2.75rem, 5vw, 3.75rem);
+    }
+
+    .eyebrow {
+      margin: 0 0 1rem;
+      color: var(--accent);
+      font-size: 0.74rem;
+      font-weight: 850;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1, h2 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 500;
+      letter-spacing: -0.045em;
+    }
+
+    h1 {
+      max-width: 11ch;
+      margin-bottom: 1.25rem;
+      font-size: clamp(3.1rem, 6vw, 5rem);
+      line-height: 0.94;
+    }
+
+    .intro {
+      max-width: 42rem;
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 1.8vw, 1.15rem);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      border: 1px solid var(--line);
+      border-radius: 1.2rem;
+      background: rgba(255, 254, 250, 0.68);
+      box-shadow: 0 18px 45px rgba(29, 54, 47, 0.06);
+    }
+
+    .stat {
+      padding: 1.3rem;
+    }
+
+    .stat + .stat { border-left: 1px solid var(--line); }
+
+    .stat strong {
+      display: block;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 2.15rem;
+      line-height: 1;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .catalog {
+      padding: 2.25rem 0 5rem;
+      border-top: 1px solid var(--line);
+    }
+
+    .tools {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+    }
+
+    .filter {
+      min-height: 2.55rem;
+      padding: 0.55rem 0.9rem;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.79rem;
+      font-weight: 750;
+    }
+
+    .filter[aria-pressed="true"] {
+      color: var(--surface);
+      background: var(--ink);
+      border-color: var(--ink);
+    }
+
+    .search {
+      width: min(100%, 18rem);
+      min-height: 2.65rem;
+      padding: 0.55rem 0.9rem;
+      color: var(--ink);
+      background: rgba(255, 254, 250, 0.7);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    .search::placeholder { color: #7d8782; }
+
+    .results-line {
+      margin-bottom: 1rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.85rem;
+    }
+
+    .game {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 0.9rem;
+      align-items: center;
+      min-height: 6.3rem;
+      padding: 1rem;
+      background: rgba(255, 254, 250, 0.7);
+      border: 1px solid var(--line);
+      border-radius: 1.1rem;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .game:hover {
+      transform: translateY(-2px);
+      background: var(--surface);
+      border-color: rgba(23, 107, 91, 0.42);
+    }
+
+    .icon {
+      display: grid;
+      place-items: center;
+      width: 2.8rem;
+      height: 2.8rem;
+      background: var(--accent-soft);
+      border-radius: 0.8rem;
+      font-size: 1.3rem;
+    }
+
+    .game h3 {
+      margin-bottom: 0.25rem;
+      font-size: 0.91rem;
+      line-height: 1.25;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+
+    .arrow { color: var(--accent); font-weight: 800; }
+    .game[hidden] { display: none; }
+
+    .empty {
+      display: none;
+      padding: 3rem 1rem;
+      color: var(--muted);
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 1.1rem;
+    }
+
+    .empty.visible { display: block; }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 2rem;
+      padding: 1.5rem 0 2.5rem;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      font-size: 0.77rem;
+    }
+
+    footer p { margin-bottom: 0; }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 720px) {
+      .hero { grid-template-columns: 1fr; gap: 2rem; }
+      .stats { max-width: 23rem; }
+      .tools { align-items: stretch; flex-direction: column; }
+      .search { width: 100%; max-width: none; }
+    }
+
+    @media (max-width: 560px) {
+      .shell { width: min(calc(100% - 1.5rem), var(--page)); }
+      header { min-height: 4.25rem; }
+      .message { margin-top: 0.75rem; border-radius: 1.1rem; }
+      .hero { padding: 3.2rem 0 2.8rem; }
+      h1 { font-size: clamp(3.2rem, 17vw, 4.6rem); }
+      .grid { grid-template-columns: 1fr; }
+      footer { display: block; }
+      footer p + p { margin-top: 0.3rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .game { transition: none; }
+    }
+  </style>
 </head>
 <body>
-    <p>If you are not redirected automatically, <a href="https://aalsaedi.github.io/games/1446/girls">click here</a>.</p>
+  <header class="shell">
+    <a class="brand" href="../">Abdullah Alsaedi</a>
+    <a class="back" href="../">← Academic homepage</a>
+  </header>
+
+  <main>
+    <section class="shell message" aria-label="Page message">
+      <blockquote>
+        “The supreme accomplishment is to blur the line between work and play.”
+        <footer>Arnold J. Toynbee</footer>
+      </blockquote>
+    </section>
+
+    <section class="shell hero">
+      <div>
+        <p class="eyebrow">Game Design &amp; Programming</p>
+        <h1>Student game projects.</h1>
+        <p class="intro">
+          A playable archive of course projects created by undergraduate students
+          across two academic cohorts.
+        </p>
+      </div>
+      <div class="stats" aria-label="Archive summary">
+        <div class="stat"><strong>35</strong><span>Playable games</span></div>
+        <div class="stat"><strong>2</strong><span>Academic years</span></div>
+      </div>
+    </section>
+
+    <section class="catalog" aria-labelledby="catalog-title">
+      <div class="shell">
+        <h2 id="catalog-title" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Game catalog</h2>
+
+        <div class="tools">
+          <div class="filters" role="group" aria-label="Filter games">
+            <button class="filter" type="button" data-filter="all" aria-pressed="true">All projects</button>
+            <button class="filter" type="button" data-filter="1447" aria-pressed="false">1447 AH · Male cohort</button>
+            <button class="filter" type="button" data-filter="1446" aria-pressed="false">1446 AH · Female cohort</button>
+          </div>
+          <label>
+            <span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Search games</span>
+            <input class="search" type="search" placeholder="Search by game title…" autocomplete="off">
+          </label>
+        </div>
+
+        <p class="results-line" aria-live="polite"><span id="result-count">35</span> projects shown</p>
+
+        <div class="grid" id="game-grid">
+          <a class="game" data-year="1447" data-title="sequence knight" href="1447/boys/sequence_knight/"><span class="icon">🏆</span><div><h3>Sequence Knight</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="2d car drive" href="1447/boys/2d_car_drive/"><span class="icon">🚗</span><div><h3>2D Car Drive</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="astro blaster" href="1447/boys/astro_blaster/"><span class="icon">🚀</span><div><h3>Astro Blaster</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="blast jump" href="1447/boys/blast_jump/"><span class="icon">💥</span><div><h3>Blast Jump</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="coin hunter" href="1447/boys/coin_hunter/"><span class="icon">🪙</span><div><h3>Coin Hunter</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="coin hunter 2" href="1447/boys/coin_hunter2/"><span class="icon">💰</span><div><h3>Coin Hunter 2</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="coin runner" href="1447/boys/coin_runner/"><span class="icon">🏃</span><div><h3>Coin Runner</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="deep sea project" href="1447/boys/deep_sea_project/"><span class="icon">🌊</span><div><h3>Deep Sea Project</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="defence shooter" href="1447/boys/defence_shooter/"><span class="icon">🎯</span><div><h3>Defence Shooter</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="flappy gravity" href="1447/boys/flappy_gravity/"><span class="icon">🪽</span><div><h3>Flappy Gravity</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="hot pursuit" href="1447/boys/hot_pursuit/"><span class="icon">🚓</span><div><h3>Hot Pursuit</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="hunt the duck" href="1447/boys/hunt_the_duck/"><span class="icon">🦆</span><div><h3>Hunt the Duck</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="legends of cit" href="1447/boys/legends_of_cit/"><span class="icon">⚔️</span><div><h3>Legends of CIT</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="platformer assignment" href="1447/boys/platformer_assignment/"><span class="icon">🧱</span><div><h3>Platformer Assignment</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="player demo" href="1447/boys/player_demo/"><span class="icon">🎮</span><div><h3>Player Demo</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="red rain" href="1447/boys/red_rain/"><span class="icon">🌧️</span><div><h3>Red Rain</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="rock escape" href="1447/boys/rock_escape/"><span class="icon">🪨</span><div><h3>Rock Escape</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="sky runner" href="1447/boys/sky_runner/"><span class="icon">☁️</span><div><h3>Sky Runner</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="space defender" href="1447/boys/space_defender/"><span class="icon">🛸</span><div><h3>Space Defender</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="the graveyard" href="1447/boys/the_graveyard/"><span class="icon">🪦</span><div><h3>The Graveyard</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1447" data-title="vampire survivor" href="1447/boys/vampire_survivor/"><span class="icon">🧛</span><div><h3>Vampire Survivor</h3><span class="meta">1447 AH · Male cohort</span></div><span class="arrow">↗</span></a>
+
+          <a class="game" data-year="1446" data-title="flappy adventure" href="1446/girls/flappy_adventure/index.html"><span class="icon">🪽</span><div><h3>Flappy Adventure</h3><span class="meta">1446 AH · Female cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1446" data-title="endless odyssey" href="1446/girls/endless_odyssey/index.htm"><span class="icon">🧭</span><div><h3>Endless Odyssey</h3><span class="meta">1446 AH · Female cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1446" data-title="dino world" href="1446/girls/dino_world/index.html"><span class="icon">🦕</span><div><h3>Dino World</h3><span class="meta">1446 AH · Female cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1446" data-title="dino and walls" href="1446/girls/dino_and_walls/index.html"><span class="icon">🦖</span><div><h3>Dino &amp; Walls</h3><span class="meta">1446 AH · Female cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1446" data-title="shadow of ninja" href="1446/girls/shadow_of_ninja/index.html"><span class="icon">🥷</span><div><h3>Shadow of Ninja</h3><span class="meta">1446 AH · Female cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1446" data-title="number ninjas" href="1446/girls/number_ninjas/index.html"><span class="icon">🔢</span><div><h3>Number Ninjas</h3><span class="meta">1446 AH · Female cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1446" data-title="coin dash escape" href="1446/girls/coin_dash_escape/index.html"><span class="icon">🪙</span><div><h3>Coin Dash Escape</h3><span class="meta">1446 AH · Female cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1446" data-title="bounce master" href="1446/girls/bounce_master/index.html"><span class="icon">🟠</span><div><h3>Bounce Master</h3><span class="meta">1446 AH · Female cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1446" data-title="coin catcher" href="1446/girls/coin_catcher/index.html"><span class="icon">💰</span><div><h3>Coin Catcher</h3><span class="meta">1446 AH · Female cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1446" data-title="desert water rush" href="1446/girls/desert_water_rush/index.html"><span class="icon">💧</span><div><h3>Desert Water Rush</h3><span class="meta">1446 AH · Female cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1446" data-title="diamonds collector" href="1446/girls/diamonds_collector/index.html"><span class="icon">💎</span><div><h3>Diamonds Collector</h3><span class="meta">1446 AH · Female cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1446" data-title="drops of danger" href="1446/girls/drops_of_danger/index.htm"><span class="icon">⚠️</span><div><h3>Drops of Danger</h3><span class="meta">1446 AH · Female cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1446" data-title="space war" href="1446/girls/space_war/index.html"><span class="icon">🚀</span><div><h3>Space War</h3><span class="meta">1446 AH · Female cohort</span></div><span class="arrow">↗</span></a>
+          <a class="game" data-year="1446" data-title="bee diamond quest" href="1446/girls/bee_diamond_quest/gameindex.html"><span class="icon">🐝</span><div><h3>Bee Diamond Quest</h3><span class="meta">1446 AH · Female cohort</span></div><span class="arrow">↗</span></a>
+        </div>
+
+        <p class="empty" id="empty-state">No games match this search.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell">
+    <p>Game Design &amp; Programming · Student archive</p>
+    <p>Dr. Abdullah Alsaedi · Taif University</p>
+  </footer>
+
+  <script>
+    const games = [...document.querySelectorAll('.game')];
+    const buttons = [...document.querySelectorAll('.filter')];
+    const search = document.querySelector('.search');
+    const count = document.querySelector('#result-count');
+    const empty = document.querySelector('#empty-state');
+    let activeYear = 'all';
+
+    function updateCatalog() {
+      const query = search.value.trim().toLowerCase();
+      let visible = 0;
+
+      games.forEach((game) => {
+        const matchesYear = activeYear === 'all' || game.dataset.year === activeYear;
+        const matchesQuery = game.dataset.title.includes(query);
+        const show = matchesYear && matchesQuery;
+        game.hidden = !show;
+        if (show) visible += 1;
+      });
+
+      count.textContent = visible;
+      empty.classList.toggle('visible', visible === 0);
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activeYear = button.dataset.filter;
+        buttons.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+        updateCatalog();
+      });
+    });
+
+    search.addEventListener('input', updateCatalog);
+  </script>
 </body>
 </html>
